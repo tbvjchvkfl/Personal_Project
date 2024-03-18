@@ -1,0 +1,24 @@
+#pragma once
+#include "Actor.h"
+#include "Player.h"
+#include <memory>
+
+
+
+class Bug : public Actor
+{
+private:
+	const D2D_POINT_2F UPVECTOR{ 0.0f, -1.0f };
+	float mRotation;
+public:
+	bool mIsDead;
+	float mSteps;
+	int mStage;
+public:
+	Bug(D2DFramework* pFramework);
+	virtual void Draw() override;
+	void Draw_1(POINT& ptn);
+	bool IsClicked(POINT& pt);
+	bool IsCollision(D2D_VECTOR_2F& Pos);
+};
+
