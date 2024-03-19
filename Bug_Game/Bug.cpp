@@ -13,7 +13,7 @@ Bug::Bug(D2DFramework* pFramework, Player* pPlayer) : Actor(pFramework, L"Images
     mIsDead = false;
     mSteps = 0.0f;
     mStage = 1;
-    spPlayer = std::make_shared<Player>(pPlayer);
+    mpPlayer = pPlayer;
 }
 
 void Bug::Draw()
@@ -25,7 +25,7 @@ void Bug::Draw()
     }
     auto size = mpBitmap->GetPixelSize();
 
-    auto pPos = spPlayer->GetPosition();
+    auto pPos = mpPlayer->GetPosition();
     BugMovement(pPos);
 
     auto matTranslate = D2D1::Matrix3x2F::Translation(mX, mY);
@@ -101,4 +101,3 @@ void Bug::BugMovement(D2D_VECTOR_2F& Pos)
         }
     }
 }
-

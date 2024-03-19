@@ -12,9 +12,9 @@ HRESULT BugsGame::Initialize(HINSTANCE hinstance, LPCWSTR title, UINT width, UIN
     mspPlayer = std::make_shared<Player>(this);
     for (int i = 0; i < 40; i++)
     {
-        mBuglist.push_back(std::make_shared<Bug>(this));
+        mBuglist.push_back(std::make_shared<Bug>(this, mspPlayer.get()));
     }
-
+    mStage = 0;
     return S_OK;
 }
 
@@ -33,6 +33,8 @@ void BugsGame::Render()
     {
         bug->Draw();
     }
+
+
     mspPlayer->Draw();
     HRESULT hr = mspRenderTarget->EndDraw();
 
@@ -91,8 +93,21 @@ void BugsGame::CheckCollision()
                [&](auto& actor)
                {
                    Bug* p = static_cast<Bug*>(actor.get());
+                   
                    return p->IsCollision(PlayerPosition);
                }
            );
            mBuglist.erase(list_iterator, mBuglist.end());
 }
+
+void BugsGame::Bug_Move()
+{
+    auto Pos = mspPlayer->GetPosition();
+
+    for (auto& bug : mBuglist)
+    {
+        auto bPos = bug->GetPosition();
+        
+    }
+}
+
