@@ -1,9 +1,10 @@
 #include "Bug.h"
 #include <algorithm>
+#include "Player.h"
 
-
-Bug::Bug(D2DFramework* pFramework) : Actor(pFramework, L"Images/Bugs.png")
+Bug::Bug(D2DFramework* pFramework, Player* pPlayer) : Actor(pFramework, L"Images/Bugs.png")
 {
+    
     RECT rct;
     GetClientRect(pFramework->GetHWND(), &rct);
     mX = static_cast<float>(rand() % (rct.right - rct.left));
@@ -12,6 +13,7 @@ Bug::Bug(D2DFramework* pFramework) : Actor(pFramework, L"Images/Bugs.png")
     mIsDead = false;
     mSteps = 0.0f;
     mStage = 1;
+    spPlayer = std::make_shared<Player>(pPlayer);
 }
 
 void Bug::Draw()
@@ -23,52 +25,9 @@ void Bug::Draw()
     }
     auto size = mpBitmap->GetPixelSize();
 
+    auto pPos = spPlayer->GetPosition();
+    BugMovement(pPos);
 
-
-    if (mStage == 0)
-    {
-        if (mSteps++ > 30)
-        {
-            mSteps = 0;
-            mRotation += (1 - rand() % 3) * 45.0f;
-        }
-
-        auto forward = UPVECTOR * D2D1::Matrix3x2F::Rotation(mRotation);
-        mX += forward.x;
-        mY += forward.y;
-    }
-    if (mStage == 1)
-    {
-        POINT pt;
-        Player* pPlayer;
-
-        GetCursorPos(&pt);
-        ScreenToClient(mpFramework->GetHWND(), &pt);
-        //auto TargetPos = mspTarget->GetPosition();
-        // 나의 위치와 타겟의 위치를 구한다.
-        // 타겟의 위치에서 나의 위치를 뺀것이
-
-        D2D_VECTOR_2F vDistance = { pt.x - mX, pt.y - mY };
-
-        float normal = sqrt(vDistance.x * vDistance.x + vDistance.y * vDistance.y);
-
-        vDistance.x /= normal;
-        vDistance.y /= normal;
-
-        mX += vDistance.x;
-        mY += vDistance.y;
-
-        
-        float targetRotation = atan2(vDistance.y, vDistance.x) * 180.0f / 3.14159265f;
-
-        
-        if (mRotation < targetRotation) {
-            mRotation += 1.0f;
-        }
-        else if (mRotation > targetRotation) {
-            mRotation -= 1.0f;
-        }
-    }
     auto matTranslate = D2D1::Matrix3x2F::Translation(mX, mY);
     auto matRotation = D2D1::Matrix3x2F::Rotation(mRotation, D2D_POINT_2F{ size.width * 0.5f, size.height * 0.5f });
     pRT->SetTransform(matRotation * matTranslate);
@@ -102,3 +61,44 @@ bool Bug::IsCollision(D2D_VECTOR_2F& Pos)
     }
     return false;
 }
+
+void Bug::BugMovement(D2D_VECTOR_2F& Pos)
+{
+    if (mStage == 0)
+    {
+        if (mSteps++ > 30)
+        {
+            mSteps = 0;
+            mRotation += (1 - rand() % 3) * 45.0f;
+        }
+
+        auto forward = UPVECTOR * D2D1::Matrix3x2F::Rotation(mRotation);
+
+        mX += forward.x;
+        mY += forward.y;
+    }
+    if (mStage == 1)
+    {
+        D2D_VECTOR_2F vDistance = { Pos.x - mX, Pos.y - mY };
+
+        float normal = sqrt(vDistance.x * vDistance.x + vDistance.y * vDistance.y);
+
+        vDistance.x /= normal;
+        vDistance.y /= normal;
+
+        mX += vDistance.x;
+        mY += vDistance.y;
+
+
+        float targetRotation = atan2(vDistance.y, vDistance.x) * 180.0f / 3.14159265f;
+
+
+        if (mRotation < targetRotation) {
+            mRotation += 1.0f;
+        }
+        else if (mRotation > targetRotation) {
+            mRotation -= 1.0f;
+        }
+    }
+}
+
