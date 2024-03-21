@@ -9,6 +9,12 @@ Bug::Bug(D2DFramework* pFramework, Player* pPlayer) : Actor(pFramework, L"Images
     GetClientRect(pFramework->GetHWND(), &rct);
     mX = static_cast<float>(rand() % (rct.right - rct.left));
     mY = static_cast<float>(rand() % (rct.bottom - rct.top));
+
+    if (mX < rct.left || mX > rct.right)
+    {
+        
+    }
+
     mRotation = 0.0f;
     mIsDead = false;
     mSteps = 0.0f;
@@ -101,3 +107,11 @@ void Bug::BugMovement(D2D_VECTOR_2F& Pos)
         }
     }
 }
+
+void Bug::WallCollision()
+{
+    RECT rect;
+    GetClientRect(mpFramework->GetHWND(), &rect);
+    
+}
+
