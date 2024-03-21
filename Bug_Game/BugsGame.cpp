@@ -29,13 +29,16 @@ void BugsGame::Render()
 
     mspBackground->Draw();
     
-    for (auto& bug : mBuglist)
+    if (mStage == 0)
     {
-        bug->Draw();
+        for (auto& bug : mBuglist)
+        {
+            bug->Draw();
+        }
+
+        mspPlayer->Draw();
     }
-
-
-    mspPlayer->Draw();
+    
     HRESULT hr = mspRenderTarget->EndDraw();
 
     if (hr == D2DERR_RECREATE_TARGET)
