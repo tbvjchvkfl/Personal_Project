@@ -1,6 +1,7 @@
 #include "D2DFramework.h"
 
 #pragma comment (lib, "d2d1.lib")
+#pragma comment (lib, "dwrite.lib")
 
 HRESULT D2DFramework::InitWindow(HINSTANCE hInstance, LPCWSTR title, UINT w, UINT h)
 {
@@ -146,4 +147,9 @@ LRESULT D2DFramework::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPa
 	}
 	}
 	return 0;
+}
+
+void D2DFramework::WriteText()
+{
+	
 }

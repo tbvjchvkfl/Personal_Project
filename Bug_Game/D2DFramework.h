@@ -1,6 +1,7 @@
 #pragma once
 #include <d2d1.h>
 #include <wrl/client.h>
+#include <dwrite.h>
 #include "com_exception.h"
 #include "BitmapManager.h"
 
@@ -16,6 +17,8 @@ protected:
 protected:
 	Microsoft::WRL::ComPtr<ID2D1Factory> mspD2DFactory{};
 	Microsoft::WRL::ComPtr<ID2D1HwndRenderTarget> mspRenderTarget{};
+	Microsoft::WRL::ComPtr<IDWriteFactory> mspWriteFactory{};
+	Microsoft::WRL::ComPtr<ID2D1Brush> mspTextBrush{};
 
 protected:
 	HRESULT InitWindow(HINSTANCE hInstance, LPCWSTR title = L"D2DFramework", UINT w = 1024, UINT h = 768);
@@ -46,5 +49,7 @@ public:
 	{
 		return mHwnd;
 	}
+
+	void WriteText();
 };
 
