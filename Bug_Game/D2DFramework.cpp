@@ -149,7 +149,29 @@ LRESULT D2DFramework::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPa
 	return 0;
 }
 
-void D2DFramework::WriteText()
+void D2DFramework::WriteText(const WCHAR* text, FLOAT x, FLOAT y, FLOAT width, FLOAT height, const WCHAR* fontFamily, FLOAT fontsize, const D2D1_COLOR_F& textColor)
 {
 	
+	
+	if (mspRenderTarget)
+	{
+		Microsoft::WRL::ComPtr<IDWriteTextFormat> cpTexform;
+		
+		mspWriteFactory->CreateTextFormat(
+			fontFamily,
+			NULL,
+			DWRITE_FONT_WEIGHT_NORMAL,
+			DWRITE_FONT_STYLE_NORMAL,
+			DWRITE_FONT_STRETCH_NORMAL,
+			fontsize,
+			L"",
+			&cpTexform
+		);
+
+		Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> cpTexBrush;
+		mspRenderTarget->CreateSolidColorBrush(textColor, &cpTexBrush);
+
+		D2D1_RECT_F TextRect = D2D1::RectF(x, y, x + width, y + height);
+		mspRenderTarget->DrawText(text, wcslen(text), cpTexform.Get(), TextRect, cpTexBrush.Get());
+	}
 }

@@ -50,6 +50,6 @@ public:
 		return mHwnd;
 	}
 
-	void WriteText();
+	void WriteText(const WCHAR* text, FLOAT x, FLOAT y, FLOAT width, FLOAT height, const WCHAR* fontFamily, FLOAT fontsize, const D2D1_COLOR_F& textColor);
 };
 
