@@ -10,15 +10,10 @@ Bug::Bug(D2DFramework* pFramework, Player* pPlayer) : Actor(pFramework, L"Images
     mX = static_cast<float>(rand() % (rct.right - rct.left));
     mY = static_cast<float>(rand() % (rct.bottom - rct.top));
 
-    if (mX < rct.left || mX > rct.right)
-    {
-        
-    }
-
     mRotation = 0.0f;
     mIsDead = false;
     mSteps = 0.0f;
-    mStage = 1;
+    mStage = 0;
     mpPlayer = pPlayer;
 }
 
@@ -70,6 +65,7 @@ bool Bug::IsCollision(D2D_VECTOR_2F& Pos)
 
 void Bug::BugMovement(D2D_VECTOR_2F& Pos)
 {
+    ClamptheWall();
     if (mStage == 0)
     {
         if (mSteps++ > 30)
@@ -108,10 +104,17 @@ void Bug::BugMovement(D2D_VECTOR_2F& Pos)
     }
 }
 
-void Bug::WallCollision()
+void Bug::ClamptheWall()
 {
     RECT rect;
     GetClientRect(mpFramework->GetHWND(), &rect);
-    
+    if (mX <= rect.left || mX >= rect.right)
+    {
+        mRotation += 180.0f;
+    }
+    if (mY <= rect.top || mY >= rect.bottom)
+    {
+        mRotation += 180.0f;
+    }
 }
 

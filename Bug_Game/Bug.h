@@ -23,6 +23,6 @@ public:
 	bool IsClicked(POINT& pt);
 	bool IsCollision(D2D_VECTOR_2F& Pos);
 	void BugMovement(D2D_VECTOR_2F& Pos);
-	void WallCollision();
+	void ClamptheWall();
 };
 
