@@ -29,12 +29,15 @@ void BugsGame::Render()
 
     mspBackground->Draw();
     
+    WriteText(L"Testing Text", 100, 100, 150, 150, L"¸¼Àº°íµñ", 12);
+
     if (mStage == 0)
     {
         for (auto& bug : mBuglist)
         {
             bug->Draw();
         }
+
 
         mspPlayer->Draw();
     }

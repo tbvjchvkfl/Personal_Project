@@ -18,7 +18,7 @@ protected:
 	Microsoft::WRL::ComPtr<ID2D1Factory> mspD2DFactory{};
 	Microsoft::WRL::ComPtr<ID2D1HwndRenderTarget> mspRenderTarget{};
 	Microsoft::WRL::ComPtr<IDWriteFactory> mspWriteFactory{};
-	Microsoft::WRL::ComPtr<ID2D1Brush> mspTextBrush{};
+	Microsoft::WRL::ComPtr<ID2D1SolidColorBrush> mspTextBrush{};
 
 protected:
 	HRESULT InitWindow(HINSTANCE hInstance, LPCWSTR title = L"D2DFramework", UINT w = 1024, UINT h = 768);
@@ -50,6 +50,6 @@ public:
 		return mHwnd;
 	}
 
-	void WriteText(const WCHAR* text, FLOAT x, FLOAT y, FLOAT width, FLOAT height, const WCHAR* fontFamily, FLOAT fontsize, const D2D1_COLOR_F& textColor);
+	virtual void WriteText(const WCHAR* text, FLOAT x, FLOAT y, FLOAT width, FLOAT height, const WCHAR* fontFamily = L"¸¼Àº°íµñ", FLOAT fontsize = 20.0f, const D2D1_COLOR_F& textColor = D2D1::ColorF(D2D1::ColorF::Black));
 };
 

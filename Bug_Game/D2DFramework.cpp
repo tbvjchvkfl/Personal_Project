@@ -43,6 +43,8 @@ HRESULT D2DFramework::InitD2D(HWND hwnd)
 
 	hr = D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, mspD2DFactory.GetAddressOf());
 	ThrowIfFailed(hr);
+
+	hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(mspWriteFactory), reinterpret_cast<IUnknown**>(mspWriteFactory.GetAddressOf()));
 	
 	hr = CreateDeviceResources();
     return hr;
@@ -151,8 +153,6 @@ LRESULT D2DFramework::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPa
 
 void D2DFramework::WriteText(const WCHAR* text, FLOAT x, FLOAT y, FLOAT width, FLOAT height, const WCHAR* fontFamily, FLOAT fontsize, const D2D1_COLOR_F& textColor)
 {
-	
-	
 	if (mspRenderTarget)
 	{
 		Microsoft::WRL::ComPtr<IDWriteTextFormat> cpTexform;
