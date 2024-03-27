@@ -24,6 +24,7 @@ private:
 public:
 	virtual void Draw();
 	inline D2D_VECTOR_2F GetPosition() { return { mX, mY }; }
+	inline D2D1_SIZE_U Getsize() { return mpBitmap->GetPixelSize(); }
 	inline void SetPositioin(const D2D_VECTOR_2F& pos) { mX = pos.x; mY = pos.y; }
 	inline void SetPosition(float x, float y) { mX = x; mY = y; }
 };
