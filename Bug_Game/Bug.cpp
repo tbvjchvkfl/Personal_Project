@@ -53,14 +53,21 @@ bool Bug::IsClicked(POINT& pt)
 
 bool Bug::IsCollision(D2D_VECTOR_2F& Pos)
 {
-    auto size = mpBitmap->GetPixelSize();
-    
-    if (Pos.x >= mX && Pos.y >= mY && Pos.x <= mX + size.width && Pos.y <= mY + size.height)
+    if (mStage == 0)
     {
+        auto size = mpBitmap->GetPixelSize();
+        auto PlayerSize = mpPlayer->Getsize();
+        if (PlayerSize.width + Pos.x <= mX || Pos.x >= mX + size.width)
+        {
+            return false;
+        }
+        if (PlayerSize.height + Pos.y <= mY || Pos.y >= mY + size.height)
+        {
+            return false;
+        }
         mIsDead = true;
         return true;
     }
-    return false;
 }
 
 void Bug::BugMovement(D2D_VECTOR_2F& Pos)
@@ -81,7 +88,18 @@ void Bug::BugMovement(D2D_VECTOR_2F& Pos)
     }
     if (mStage == 1)
     {
-        D2D_VECTOR_2F vDistance = { Pos.x - mX, Pos.y - mY };
+        // 타겟과 나의 비트맵 사이즈 가져오기
+        auto Playersize = mpPlayer->Getsize();
+        auto mySize = mpBitmap->GetPixelSize();
+
+        // 타겟 비트맵의 중심좌표
+        float TargetPosX = (Pos.x + Playersize.width) / 2;
+        float TargetPosY = (Pos.y + Playersize.height) / 2;
+
+        // 나의 비트맵 중심 좌표
+        float MyPosX = ((mX + mySize.width) / 2) + 8;
+        float MyPosY = ((mY + mySize.height) / 2) + 8;
+        D2D_VECTOR_2F vDistance = { TargetPosX - MyPosX, TargetPosY - MyPosY };
 
         float normal = sqrt(vDistance.x * vDistance.x + vDistance.y * vDistance.y);
 
@@ -117,4 +135,3 @@ void Bug::ClamptheWall()
         mRotation += 180.0f;
     }
 }
-
