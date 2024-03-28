@@ -12,13 +12,13 @@ HRESULT BugsGame::Initialize(HINSTANCE hinstance, LPCWSTR title, UINT width, UIN
     mspUI = std::make_shared<UI_Box>(this);
     mspSubUI = std::make_shared<Actor>(this, L"Images/Sub_UI.png", 0.0f, 250.0f, 1.0f);
     mspPlayer = std::make_shared<Player>(this);
-    for (int i = 0; i < 40; i++)
+    for (int i = 0; i < 2; i++)
     {
         mBuglist.push_back(std::make_shared<Bug>(this, mspPlayer.get()));
     }
     mStage = 0;
     mGameStart = false;
-    mGameClear = false;
+    mGameClear = 0;
     time = 0;
     
     return S_OK;
@@ -95,17 +95,22 @@ void BugsGame::Render()
                 for (auto& bug : mBuglist)
                 {
                     bug->Draw();
+                    bug->mStage = 0;
                 }
 
                 mspPlayer->Draw();
             }
-            if (mGameClear)
+            if (mGameClear == 1)
             {
                 for (int i = 0; i < 20; i++)
                 {
                     mBuglist.push_back(std::make_shared<Bug>(this, mspPlayer.get()));
                 }
-                mGameClear = false;
+                mGameClear++;
+            }
+            if (mGameClear == 3)
+            {
+                WriteText(L"Game Clear!", 280, 300, 800, 10, L"¸¼Àº°íµñ", 90);
             }
             if (mStage == 1)
             {
@@ -113,11 +118,11 @@ void BugsGame::Render()
                 for (auto& bug : mBuglist)
                 {
                     bug->Draw();
+                    bug->mStage = 1;
                 }
                 mspPlayer->Draw();
             }
         }
-        
     }
     
     HRESULT hr = mspRenderTarget->EndDraw();
@@ -170,6 +175,11 @@ void BugsGame::CheckBugs()
         );
         mBuglist.erase(itr, mBuglist.end());
     } 
+    if (mBuglist.empty())
+    {
+        mStage++;
+        mGameClear++;
+    }
 }
 
 void BugsGame::CheckCollision()
@@ -188,6 +198,6 @@ void BugsGame::CheckCollision()
     if (mBuglist.empty())
     {
         mStage++;
-        mGameClear = true;
+        mGameClear++;
     }
 }

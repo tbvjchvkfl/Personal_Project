@@ -21,7 +21,7 @@ private:
 public:
 	int mStage;
 	bool mGameStart;
-	bool mGameClear;
+	int mGameClear;
 	int time;
 public:
 	virtual HRESULT Initialize(HINSTANCE hinstance, LPCWSTR title = L"BugsGame", UINT width = 1024, UINT height = 768) override;
