@@ -6,11 +6,11 @@ class Actor
 protected:
 	D2DFramework* mpFramework;
 	ID2D1Bitmap* mpBitmap;
-
+	
 	float mX;
 	float mY;
 	float mOpacity;
-
+	
 public:
 	Actor() = delete;
 	Actor(D2DFramework* pFramework, LPCWSTR filename);
