@@ -21,6 +21,7 @@ private:
 public:
 	int mStage;
 	bool mGameStart;
+	bool mGameEnd;
 	int mGameClear;
 	int time;
 public:
@@ -30,5 +31,6 @@ public:
 
 	void CheckBugs();
 	void CheckCollision();
+	void PlayerIsDead();
 };
 

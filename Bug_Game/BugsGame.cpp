@@ -18,6 +18,7 @@ HRESULT BugsGame::Initialize(HINSTANCE hinstance, LPCWSTR title, UINT width, UIN
     }
     mStage = 0;
     mGameStart = false;
+    mGameEnd = false;
     mGameClear = 0;
     time = 0;
     
@@ -49,7 +50,7 @@ void BugsGame::Render()
 
         mspSubUI->Draw();
         WriteText(L"방향키를 이용하여 벌레 캐릭터를 움직여 다른 벌레들을 잡아먹는 게임입니다.", 20, 280, 540, 100, L"맑은고딕", 25);
-        WriteText(L"제한 시간안에 다른 벌레를 모두 잡아먹으세요.", 20, 350, 800, 100, L"맑은고딕", 25);
+        WriteText(L"다른 벌레를 모두 잡아먹으세요.", 20, 350, 800, 100, L"맑은고딕", 25);
 
 
         WriteText(L"GAME START", 40, 50, 800, 100, L"맑은고딕", 90);
@@ -106,21 +107,32 @@ void BugsGame::Render()
                 {
                     mBuglist.push_back(std::make_shared<Bug>(this, mspPlayer.get()));
                 }
+                for (auto& bug : mBuglist)
+                {
+                    bug->Reset();
+                }
+                mspPlayer->Reset();
                 mGameClear++;
             }
             if (mGameClear == 3)
             {
                 WriteText(L"Game Clear!", 280, 300, 800, 10, L"맑은고딕", 90);
             }
+            if (mGameEnd)
+            {
+                WriteText(L"You Died!", 280, 300, 800, 10, L"맑은고딕", 90);
+            }
             if (mStage == 1)
             {
                 CheckBugs();
+                PlayerIsDead();
                 for (auto& bug : mBuglist)
                 {
                     bug->Draw();
                     bug->mStage = 1;
                 }
                 mspPlayer->Draw();
+                mspPlayer->mStage = 1;
             }
         }
     }
@@ -197,7 +209,23 @@ void BugsGame::CheckCollision()
 
     if (mBuglist.empty())
     {
+        mGameStart = false;
         mStage++;
         mGameClear++;
+        time = 0;
+    }
+}
+
+void BugsGame::PlayerIsDead()
+{
+    for (auto& bug : mBuglist)
+    {
+        auto bugPos = bug->GetPosition();
+        auto bugsize = bug->Getsize();
+        if (mspPlayer->IsCollision(bugPos, bugsize))
+        {
+            mGameEnd = true;
+            mStage = 2;
+        }
     }
 }
