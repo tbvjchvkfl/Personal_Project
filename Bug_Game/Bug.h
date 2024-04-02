@@ -3,8 +3,6 @@
 #include "Player.h"
 #include <memory>
 
-
-
 class Bug : public Actor
 {
 private:
@@ -24,5 +22,6 @@ public:
 	bool IsCollision(D2D_VECTOR_2F& Pos);
 	void BugMovement(D2D_VECTOR_2F& Pos);
 	void ClamptheWall();
+	void Reset();
 };
 

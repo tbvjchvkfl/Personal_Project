@@ -1,6 +1,5 @@
 #include "Bug.h"
 #include <algorithm>
-#include "Player.h"
 
 Bug::Bug(D2DFramework* pFramework, Player* pPlayer) : Actor(pFramework, L"Images/Bugs.png")
 {
@@ -134,4 +133,26 @@ void Bug::ClamptheWall()
     {
         mRotation += 180.0f;
     }
+}
+
+void Bug::Reset()
+{
+    RECT rect;
+    GetClientRect(mpFramework->GetHWND(), &rect);
+    
+    RECT Range;
+    GetClientRect(mpFramework->GetHWND(), &Range);
+    Range.top = rect.top + 600.0f;
+    Range.left = rect.left + 600.0f;
+    Range.bottom = rect.bottom - 600.0f;
+    Range.right = rect.right - 600.0f;
+
+
+    auto Totalwidth = rect.right - rect.left;
+    auto Totalheight = rect.bottom - rect.top;
+    auto Rangewidth = Range.right - Range.left;
+    auto Rangeheight = Range.bottom - Range.top;
+
+    mX = static_cast<float>(rand() % (Totalwidth - Rangewidth));
+    mY = static_cast<float>(rand() % (Totalheight - Rangeheight));
 }
