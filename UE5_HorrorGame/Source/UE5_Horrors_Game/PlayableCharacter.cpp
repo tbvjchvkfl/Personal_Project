@@ -7,6 +7,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "CollisionActor.h"
 #include "Components/CapsuleComponent.h"
+#include "Projectile.h"
+#include "Engine/World.h"
+
 
 APlayableCharacter::APlayableCharacter()
 {
@@ -52,6 +55,7 @@ void APlayableCharacter::SetupPlayerInputComponent(class UInputComponent* Player
 	PlayerInputComponent->BindAxis("TurnUp", this, &APlayableCharacter::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("TurnRight", this, &APlayableCharacter::AddControllerYawInput);
 
+	PlayerInputComponent->BindAction("Shoot", IE_Released, this, &APlayableCharacter::Shooting);
 	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &APlayableCharacter::ZoomIn);
 	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &APlayableCharacter::ZoomOut);
 
@@ -103,6 +107,13 @@ void APlayableCharacter::NoRunning()
 	bRunning = false;
 }
 
+void APlayableCharacter::Shooting()
+{
+	auto NewLocation = GetActorLocation() + FVector(50.0f, 0.0f, 0.0f);
+	auto NewRotation = GetActorRotation();
+	GetWorld()->SpawnActor<AProjectile>(projectileActor, NewLocation, NewRotation);
+}
+
 void APlayableCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor->IsA(ACollisionActor::StaticClass()))
@@ -112,4 +123,3 @@ void APlayableCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AAc
 		myHealth -= 0.5f;
 	}
 }
-
