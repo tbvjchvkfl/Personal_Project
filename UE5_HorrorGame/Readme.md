@@ -5,7 +5,7 @@ Horror's Game
 기능 구현
 -
 
-> ### Playeable Character
+> ### Playable Character
 >   - 걷기
 >   - 달리기
 >   - 조준
@@ -14,6 +14,7 @@ Horror's Game
 > ### Zombie_AI
 >   - 시야각
 >   - 근접 공격
+>   - 추격(이동)
 
 > ### Level Object
 >   - Collision Object
