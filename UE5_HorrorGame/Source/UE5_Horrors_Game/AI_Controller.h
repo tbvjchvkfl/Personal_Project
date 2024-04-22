@@ -21,18 +21,10 @@ class UE5_HORRORS_GAME_API AAI_Controller : public AAIController
 public:
 
 	AAI_Controller();
-
-	virtual void BeginPlay() override;
-	//virtual void OnPossess(APawn* Pawn)override;
-	virtual void Tick(float DeltaSeconds)override;
-	virtual FRotator GetControlRotation() const override;
-
-	UFUNCTION()
-	void OnPawnDetected(TArray<AActor*> DetectedPawns);
-
+	
 	float AISightRadius = 500.0f;
 	float AISightAge = 5.0f;
-	float AILoseSightRadius = AISightRadius + 50.0f;
+	float AILoseSightRadius = AISightRadius + 25.0f;
 	float AIFieldOfView = 90.0f;
 
 	class UAISenseConfig_Sight* SightConfig;
@@ -43,4 +35,14 @@ private:
 
 	UPROPERTY(Transient)
 	UBehaviorTreeComponent* BehaviorComp;
+
+protected:
+	virtual void OnPossess(APawn* InPawn) override;
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
+
+public:
+	UFUNCTION()
+	void OnTargetDetected(AActor* Actor, FAIStimulus const Stimulus);
+	virtual FRotator GetControlRotation() const override;
 };

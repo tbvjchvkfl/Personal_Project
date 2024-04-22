@@ -4,8 +4,8 @@
 #include "AI_Controller.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
-
-
+#include "EnemyCharacter.h"
+#include "BehaviorTree/BehaviorTree.h"
 
 
 AAI_Controller::AAI_Controller()
@@ -19,13 +19,14 @@ AAI_Controller::AAI_Controller()
 	SightConfig->LoseSightRadius = AILoseSightRadius;
 	SightConfig->PeripheralVisionAngleDegrees = AIFieldOfView;
 	SightConfig->SetMaxAge(AISightAge);
+	SightConfig->AutoSuccessRangeFromLastSeenLocation = 520.f;
 
 	SightConfig->DetectionByAffiliation.bDetectEnemies = true;
 	SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
 	SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
 
 	GetPerceptionComponent()->SetDominantSense(*SightConfig->GetSenseImplementation());
-	//GetPerceptionComponent()->OnPerceptionUpdated.AddDynamic(this, &AAI_Controller::OnPawnDetected);
+	GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &AAI_Controller::OnTargetDetected);
 	GetPerceptionComponent()->ConfigureSense(*SightConfig);
 }
 
@@ -43,10 +44,20 @@ void AAI_Controller::BeginPlay()
 	}
 }
 
-//void AAI_Controller::OnPossess(APawn* Pawn)
-//{
-//	Super::OnPossess(Pawn);
-//}
+void AAI_Controller::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+	if (AEnemyCharacter* const Enemy = Cast<AEnemyCharacter>(InPawn))
+	{
+		if (UBehaviorTree* const tree = Enemy->GetBehaviorTree())
+		{
+			UBlackboardComponent* BlackBoard;
+			UseBlackboard(tree->BlackboardAsset, BlackBoard);
+			Blackboard = BlackBoard;
+			RunBehaviorTree(tree);
+		}
+	}
+}
 
 void AAI_Controller::Tick(float DeltaSeconds)
 {
@@ -62,6 +73,7 @@ FRotator AAI_Controller::GetControlRotation() const
 	return FRotator(0.f, GetPawn()->GetActorRotation().Yaw, 0.0f);
 }
 
-void AAI_Controller::OnPawnDetected(TArray<AActor*> DetectedPawns)
+void AAI_Controller::OnTargetDetected(AActor* Actor, FAIStimulus const Stimulus)
 {
+	
 }
