@@ -15,6 +15,7 @@ Horror's Game
 >   - 시야각
 >   - 근접 공격
 >   - 추격(이동)
+>   - AI_FoundLocationSystem
 
 > ### Level Object
 >   - Collision Object
