@@ -9,7 +9,24 @@
 #include "Components/CapsuleComponent.h"
 #include "Projectile.h"
 #include "Engine/World.h"
+#include "WeaponActor.h"
+#include "Engine/SkeletalMeshSocket.h"
+#include "PistolWeapon.h"
 
+void APlayableCharacter::AttachWeapon(TSubclassOf<class APistolWeapon> WeaponClass)
+{
+	if (WeaponClass)
+	{
+		EquipWeapon = GetWorld()->SpawnActor<APistolWeapon>(WeaponClass);
+
+		const USkeletalMeshSocket* WeaponSocket = GetMesh()->GetSocketByName("Hand_R_Gun");
+
+		if (EquipWeapon && WeaponSocket)
+		{
+			WeaponSocket->AttachActor(EquipWeapon, GetMesh());
+		}
+	}
+}
 
 APlayableCharacter::APlayableCharacter()
 {
@@ -27,7 +44,12 @@ APlayableCharacter::APlayableCharacter()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 
 	GetCapsuleComponent()->OnComponentBeginOverlap.AddDynamic(this, &APlayableCharacter::OnOverlapBegin);
+
+	GetCharacterMovement()->MaxWalkSpeed = 200.f;
+
+	
 }
+
 
 void APlayableCharacter::Tick(float DeltaTime)
 {
@@ -35,16 +57,34 @@ void APlayableCharacter::Tick(float DeltaTime)
 	{
 		if (bZoomIn)
 		{
-			ZoomFactor += DeltaTime / 0.5f;
+			ZoomFactor += DeltaTime / 0.2f;
 		}
 		else
 		{
-			ZoomFactor -= DeltaTime / 0.25f;
+			ZoomFactor -= DeltaTime / 0.2f;
 		}
 		ZoomFactor = FMath::Clamp<float>(ZoomFactor, 0.0f, 1.0f);
 		FollowCamera->FieldOfView = FMath::Lerp<float>(90.0f, 60.0f, ZoomFactor);
 		CameraBoom->TargetArmLength = FMath::Lerp<float>(200.0f, 100.0f, ZoomFactor);
 	}
+	{
+		if (bAimming)
+		{
+			GetCharacterMovement()->bOrientRotationToMovement = false;
+			GetCharacterMovement()->bUseControllerDesiredRotation = true;
+			
+		}
+		if (!bAimming)
+		{
+			GetCharacterMovement()->bOrientRotationToMovement = true;
+		}
+	}
+}
+
+void APlayableCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	AttachWeapon(Weapon);
 }
 
 void APlayableCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -55,7 +95,10 @@ void APlayableCharacter::SetupPlayerInputComponent(class UInputComponent* Player
 	PlayerInputComponent->BindAxis("TurnUp", this, &APlayableCharacter::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("TurnRight", this, &APlayableCharacter::AddControllerYawInput);
 
-	PlayerInputComponent->BindAction("Shoot", IE_Released, this, &APlayableCharacter::Shooting);
+	
+	PlayerInputComponent->BindAction("Shoot", IE_Pressed, this, &APlayableCharacter::StartShoot);
+	PlayerInputComponent->BindAction("Shoot", IE_Released, this, &APlayableCharacter::EndShoot);
+
 	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &APlayableCharacter::ZoomIn);
 	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &APlayableCharacter::ZoomOut);
 
@@ -90,28 +133,37 @@ void APlayableCharacter::MoveRight(float Value)
 void APlayableCharacter::ZoomIn()
 {
 	bZoomIn = true;
+	bAimming = true;
+	PlayAnimMontage(Pistol_Idle, 1.0f);
 }
 
 void APlayableCharacter::ZoomOut()
 {
 	bZoomIn = false;
+	bAimming = false;
+	PlayAnimMontage(Change_Idle, 1.0f);
 }
 
 void APlayableCharacter::DoRunning()
 {
 	bRunning = true;
+	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 }
 
 void APlayableCharacter::NoRunning()
 {
 	bRunning = false;
+	GetCharacterMovement()->MaxWalkSpeed = 200.f;
 }
 
-void APlayableCharacter::Shooting()
+void APlayableCharacter::StartShoot()
 {
-	auto NewLocation = GetActorLocation() + FVector(50.0f, 0.0f, 0.0f);
-	auto NewRotation = GetActorRotation();
-	GetWorld()->SpawnActor<AProjectile>(projectileActor, NewLocation, NewRotation);
+	EquipWeapon->StartShoot(this);
+}
+
+void APlayableCharacter::EndShoot()
+{
+	EquipWeapon->EndShoot();
 }
 
 void APlayableCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
