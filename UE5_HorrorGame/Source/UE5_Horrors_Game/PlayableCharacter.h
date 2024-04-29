@@ -9,6 +9,8 @@
 /**
  * 
  */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDele_Dynamic);
+
 UCLASS()
 class UE5_HORRORS_GAME_API APlayableCharacter : public ABaseCharacter
 {
@@ -18,7 +20,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class APistolWeapon> Weapon;
 
-	APistolWeapon* EquipWeapon;
+	class APistolWeapon* EquipWeapon;
 
 	void AttachWeapon(TSubclassOf<class APistolWeapon> WeaponClass);
 
@@ -34,28 +36,42 @@ public:
 
 	FVector2D CameraInput;
 	float ZoomFactor;
-	bool bZoomIn;
 	bool bRunning;
 	bool bAimming;
+	bool bReloading;
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)override;
 	void MoveForward(float Value);
 	void MoveRight(float Value);
-	void ZoomIn();
-	void ZoomOut();
+	void StartAimming();
+	void EndAimming();
 	void DoRunning();
 	void NoRunning();
 	void StartShoot();
 	void EndShoot();
 
+	
 
 public:
 
 	virtual void Tick(float DeltaTime) override;
 	UFUNCTION()
 	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+
+	UPROPERTY(VisibleAnywhere, BlueprintAssignable, Category = "Event")
+	FDele_Dynamic FDele_Start_Reload;
+
+	UPROPERTY(VisibleAnywhere, BlueprintAssignable, Category = "Event")
+	FDele_Dynamic FDele_Start_Aimming;
+
+	UFUNCTION()
+	void StartReload();
+
+	UFUNCTION()
+	void EndReload();
 
 public:
 	UPROPERTY(EditAnywhere)

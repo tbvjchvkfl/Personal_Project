@@ -18,8 +18,10 @@ class UE5_HORRORS_GAME_API APistolWeapon : public AWeaponActor
 public:
 	APistolWeapon();
 	virtual void StartShoot(TWeakObjectPtr<APlayableCharacter>owner)override;
+	virtual void EndShoot()override;
+	virtual void Reloading()override;
 
-	void FireWithLineTrace(APlayableCharacter* owner);
+	void FireWithLineTrace(TWeakObjectPtr<APlayableCharacter>owner);
 
 private:
 	FTimerHandle FireTimerHandle;

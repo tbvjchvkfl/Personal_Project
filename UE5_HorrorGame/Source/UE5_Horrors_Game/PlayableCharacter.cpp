@@ -33,7 +33,7 @@ APlayableCharacter::APlayableCharacter()
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 200.f;
-	CameraBoom->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, 65.0f), FRotator(-50.0f, 0.0f, 0.0f));
+	CameraBoom->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, 75.0f), FRotator(-50.0f, 0.0f, 0.0f));
 	CameraBoom->bUsePawnControlRotation = true;
 
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
@@ -55,29 +55,21 @@ void APlayableCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	{
-		if (bZoomIn)
+		if (bAimming)
 		{
 			ZoomFactor += DeltaTime / 0.2f;
+			GetCharacterMovement()->bOrientRotationToMovement = false;
+			GetCharacterMovement()->bUseControllerDesiredRotation = true;
 		}
 		else
 		{
 			ZoomFactor -= DeltaTime / 0.2f;
+			GetCharacterMovement()->bOrientRotationToMovement = true;
+			GetCharacterMovement()->bUseControllerDesiredRotation = false;
 		}
 		ZoomFactor = FMath::Clamp<float>(ZoomFactor, 0.0f, 1.0f);
 		FollowCamera->FieldOfView = FMath::Lerp<float>(90.0f, 60.0f, ZoomFactor);
 		CameraBoom->TargetArmLength = FMath::Lerp<float>(200.0f, 100.0f, ZoomFactor);
-	}
-	{
-		if (bAimming)
-		{
-			GetCharacterMovement()->bOrientRotationToMovement = false;
-			GetCharacterMovement()->bUseControllerDesiredRotation = true;
-			
-		}
-		if (!bAimming)
-		{
-			GetCharacterMovement()->bOrientRotationToMovement = true;
-		}
 	}
 }
 
@@ -89,20 +81,25 @@ void APlayableCharacter::BeginPlay()
 
 void APlayableCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
-	// 이동 함수에 if 걸어보기
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	//Axis mapping
 	PlayerInputComponent->BindAxis("MoveForward", this, &APlayableCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &APlayableCharacter::MoveRight);
 	PlayerInputComponent->BindAxis("TurnUp", this, &APlayableCharacter::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("TurnRight", this, &APlayableCharacter::AddControllerYawInput);
 
-	
+
+	//Action Mapping
+	PlayerInputComponent->BindAction("Reloading", IE_Released, this, &APlayableCharacter::StartReload);
+
 	PlayerInputComponent->BindAction("Shoot", IE_Pressed, this, &APlayableCharacter::StartShoot);
 	PlayerInputComponent->BindAction("Shoot", IE_Released, this, &APlayableCharacter::EndShoot);
 
-	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &APlayableCharacter::ZoomIn);
-	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &APlayableCharacter::ZoomOut);
+	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &APlayableCharacter::StartAimming);
+	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &APlayableCharacter::EndAimming);
 
-	// 달리기 함수 수정해야함.
+	
 	PlayerInputComponent->BindAction("Running", IE_Pressed, this, &APlayableCharacter::DoRunning);
 	PlayerInputComponent->BindAction("Running", IE_Released, this, &APlayableCharacter::NoRunning);
 
@@ -130,24 +127,25 @@ void APlayableCharacter::MoveRight(float Value)
 	}
 }
 
-void APlayableCharacter::ZoomIn()
+void APlayableCharacter::StartAimming()
 {
-	bZoomIn = true;
 	bAimming = true;
-	PlayAnimMontage(Pistol_Idle, 1.0f);
+	GetCharacterMovement()->MaxWalkSpeed = 150.0f;
 }
 
-void APlayableCharacter::ZoomOut()
+void APlayableCharacter::EndAimming()
 {
-	bZoomIn = false;
 	bAimming = false;
-	PlayAnimMontage(Change_Idle, 1.0f);
+	GetCharacterMovement()->MaxWalkSpeed = 200.0f;
 }
 
 void APlayableCharacter::DoRunning()
 {
-	bRunning = true;
-	GetCharacterMovement()->MaxWalkSpeed = 500.f;
+	if (!bAimming)
+	{
+		bRunning = true;
+		GetCharacterMovement()->MaxWalkSpeed = 500.f;
+	}
 }
 
 void APlayableCharacter::NoRunning()
@@ -158,13 +156,39 @@ void APlayableCharacter::NoRunning()
 
 void APlayableCharacter::StartShoot()
 {
-	EquipWeapon->StartShoot(this);
+	if (bAimming && !bReloading)
+	{
+		EquipWeapon->StartShoot(this);
+	}
 }
 
 void APlayableCharacter::EndShoot()
 {
 	EquipWeapon->EndShoot();
 }
+
+void APlayableCharacter::StartReload()
+{
+	if (EquipWeapon->GetAmmoCount() == EquipWeapon->GetMaxAmmoCount())
+	{
+		return;
+	}
+
+	bReloading = true;
+	if (bAimming)
+	{
+		bAimming = false;
+	}
+}
+
+void APlayableCharacter::EndReload()
+{
+	if (EquipWeapon)
+	{
+		EquipWeapon->Reloading();
+	}
+}
+
 
 void APlayableCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -175,3 +199,4 @@ void APlayableCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AAc
 		myHealth -= 0.5f;
 	}
 }
+
