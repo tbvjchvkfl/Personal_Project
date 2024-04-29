@@ -3,6 +3,8 @@
 
 #include "CharacterAnimInstance.h"
 #include "PlayableCharacter.h"
+#include "GameFramework/CharacterMovementComponent.h"
+
 
 void UCharacterAnimInstance::StartReloading()
 {
@@ -19,18 +21,27 @@ void UCharacterAnimInstance::EndReloading()
 	}
 }
 
-void UCharacterAnimInstance::UpdateProperties()
+void UCharacterAnimInstance::StartAimming()
 {
-	if (PlayerPawn == nullptr)
-	{
-		PlayerPawn = TryGetPawnOwner();
-	}
+	bIsAimming = true;
 }
 
 void UCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
-	UpdateProperties();
+	
+	
+	if (PlayerPawn == nullptr)
+	{
+		PlayerPawn = TryGetPawnOwner();
+	}
+	if (PlayerPawn)
+	{
+		MovementSpeed = PlayerPawn->GetVelocity().Length();
+		PlayableCharacter = Cast<APlayableCharacter>(PlayerPawn);
+		bIsAimming = PlayableCharacter->bAimming;
+		bIsReload = PlayableCharacter->bReloading;
+	}
 }
 
 void UCharacterAnimInstance::NativeInitializeAnimation()
@@ -44,9 +55,5 @@ void UCharacterAnimInstance::NativeInitializeAnimation()
 	if (PlayerPawn)
 	{
 		PlayableCharacter = Cast<APlayableCharacter>(PlayerPawn);
-	}
-	if (PlayableCharacter)
-	{
-		PlayableCharacter->FDele_Start_Reload.AddDynamic(this, &UCharacterAnimInstance::StartReloading);
 	}
 }

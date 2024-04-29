@@ -21,8 +21,15 @@ public:
 
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float MovementSpeed;
+
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float Direction;
+
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	bool bIsWalking;
+
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	bool bIsRunning;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	bool bIsAimming;
@@ -37,15 +44,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Reloading")
 	void EndReloading();
 
+	UFUNCTION()
+	void StartAimming();
+
+
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	class UCharacterMovementComponent* PlayableCharacterMovement;
+	class UPawnMovementComponent* PlayablePawnMovement;
+	UPROPERTY(EditAnyWhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	class UCharacterMovementComponent *PlayableCharacterMovement;
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class APawn* PlayerPawn;
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class APlayableCharacter* PlayableCharacter;
 
-	UFUNCTION(BlueprintCallable, Category = "Update Properties")
-	void UpdateProperties();
-
-	
 };
