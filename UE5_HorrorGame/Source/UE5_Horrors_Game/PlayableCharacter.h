@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BaseCharacter.h"
+#include "UI_HUD_Widget.h"
 #include "PlayableCharacter.generated.h"
 
 /**
@@ -16,6 +17,14 @@ class UE5_HORRORS_GAME_API APlayableCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
 
+	UPROPERTY(EditAnywhere, Category = "Widget", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UUI_HUD_Widget> HUDWidgetClass;
+	UPROPERTY(VisibleAnywhere, Category = "Widget", meta = (AllowPrivateAccess = "true"))
+	UUI_HUD_Widget* HUDWidget;
+
+	void CreateHUD();
+
+	void BindingAmmoChagedDelegate() const;
 public:
 	UPROPERTY(EditAnywhere, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class APistolWeapon> Weapon;
@@ -32,7 +41,6 @@ public:
 	class USpringArmComponent* CameraBoom;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
 	class UCameraComponent* FollowCamera;
-	
 
 	FVector2D CameraInput;
 	float ZoomFactor;

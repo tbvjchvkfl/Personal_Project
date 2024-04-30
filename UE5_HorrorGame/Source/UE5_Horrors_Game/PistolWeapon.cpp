@@ -42,7 +42,7 @@ void APistolWeapon::EndShoot()
 
 void APistolWeapon::Reloading()
 {
-	AmmoCount = MaxAmmoCount;
+	ResetAmmoCount();
 }
 
 void APistolWeapon::FireWithLineTrace(TWeakObjectPtr<APlayableCharacter> owner)
@@ -70,7 +70,7 @@ void APistolWeapon::FireWithLineTrace(TWeakObjectPtr<APlayableCharacter> owner)
 
 			DrawDebugLine(CurrentWorld, Start, EndPoint, FColor::Red, false, 3.0f);
 
-			--AmmoCount;
+			DecreaseAmmoCount();
 			GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Green, FString::Printf(TEXT("Ammocount : %i"), AmmoCount));
 
 			

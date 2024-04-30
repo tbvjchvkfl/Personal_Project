@@ -13,6 +13,39 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "PistolWeapon.h"
 
+void APlayableCharacter::CreateHUD()
+{
+	if (HUDWidgetClass)
+	{
+		HUDWidget = Cast<UUI_HUD_Widget>(CreateWidget(GetWorld(), HUDWidgetClass));
+
+		if (HUDWidget)
+		{
+			HUDWidget->AddToViewport();
+			HUDWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
+
+			int AmmoRemainCount = EquipWeapon ? EquipWeapon->GetAmmoCount() : 0;
+			int AmmoMaxCount = EquipWeapon ? EquipWeapon->GetMaxAmmoCount() : 0;
+
+			HUDWidget->Init(AmmoRemainCount, AmmoMaxCount);
+		}
+	}
+}
+
+void APlayableCharacter::BindingAmmoChagedDelegate() const
+{
+	if (EquipWeapon)
+	{
+		EquipWeapon->AmmoChangedDelegate.AddLambda([&]()
+			{
+				if (HUDWidget)
+				{
+					HUDWidget->SetAmmoCountText(EquipWeapon->GetAmmoCount(), EquipWeapon->GetMaxAmmoCount());
+				}
+			});
+	}
+}
+
 void APlayableCharacter::AttachWeapon(TSubclassOf<class APistolWeapon> WeaponClass)
 {
 	if (WeaponClass)
@@ -77,6 +110,9 @@ void APlayableCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	AttachWeapon(Weapon);
+
+	CreateHUD();
+	BindingAmmoChagedDelegate();
 }
 
 void APlayableCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -185,6 +221,7 @@ void APlayableCharacter::EndReload()
 {
 	if (EquipWeapon)
 	{
+		bReloading = false;
 		EquipWeapon->Reloading();
 	}
 }
