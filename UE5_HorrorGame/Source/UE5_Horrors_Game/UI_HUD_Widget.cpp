@@ -2,7 +2,6 @@
 
 
 #include "UI_HUD_Widget.h"
-#include "PistolWeapon.h"
 #include "Components/TextBlock.h"
 
 void UUI_HUD_Widget::NativeConstruct()
