@@ -12,6 +12,8 @@
 #include "WeaponActor.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "PistolWeapon.h"
+#include "CircleHPBar.h"
+#include "DrawDebugHelpers.h"
 
 void APlayableCharacter::CreateHUD()
 {
@@ -80,7 +82,11 @@ APlayableCharacter::APlayableCharacter()
 
 	GetCharacterMovement()->MaxWalkSpeed = 200.f;
 
-	
+	Maxhealth = 100.0f;
+	CurHealth = Maxhealth;
+
+	InteractionCheckFrequency = 0.1f;
+	InteractionCheckDistance = 250.0f;
 }
 
 
@@ -104,6 +110,12 @@ void APlayableCharacter::Tick(float DeltaTime)
 		FollowCamera->FieldOfView = FMath::Lerp<float>(90.0f, 60.0f, ZoomFactor);
 		CameraBoom->TargetArmLength = FMath::Lerp<float>(200.0f, 100.0f, ZoomFactor);
 	}
+	{
+		if (GetWorld()->TimeSince(InteractionData.LastInteractionCheckTime) > InteractionCheckFrequency)
+		{
+			PerformInteractionCheck();
+		}
+	}
 }
 
 void APlayableCharacter::BeginPlay()
@@ -113,6 +125,7 @@ void APlayableCharacter::BeginPlay()
 
 	CreateHUD();
 	BindingAmmoChagedDelegate();
+	SetUIHealth();
 }
 
 void APlayableCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -127,6 +140,9 @@ void APlayableCharacter::SetupPlayerInputComponent(class UInputComponent* Player
 
 
 	//Action Mapping
+	PlayerInputComponent->BindAction("Interaction", IE_Pressed, this, &APlayableCharacter::BeginInteract);
+	PlayerInputComponent->BindAction("Interaction", IE_Released, this, &APlayableCharacter::EndInteract);
+
 	PlayerInputComponent->BindAction("Reloading", IE_Released, this, &APlayableCharacter::StartReload);
 
 	PlayerInputComponent->BindAction("Shoot", IE_Pressed, this, &APlayableCharacter::StartShoot);
@@ -226,14 +242,138 @@ void APlayableCharacter::EndReload()
 	}
 }
 
+void APlayableCharacter::SetUIHealth()
+{
+	if (HUDWidget)
+	{
+		float HP = CurHealth / 100.0f;
+		UHPBar->SetPercent(HP);
+	}
+}
+
+void APlayableCharacter::PerformInteractionCheck()
+{
+	InteractionData.LastInteractionCheckTime = GetWorld()->GetTimeSeconds();
+
+	FVector TraceStart{ GetPawnViewLocation() };
+	FVector TraceEnd{ TraceStart + (GetViewRotation().Vector() * InteractionCheckDistance) };
+
+	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Red, false, 1.0f);
+
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+	FHitResult TraceHit;
+
+	if (GetWorld()->LineTraceSingleByChannel(TraceHit, TraceStart, TraceEnd, ECC_Visibility, QueryParams))
+	{
+		if (TraceHit.GetActor()->GetClass()->ImplementsInterface(UInteractionInterface::StaticClass()))
+		{
+			const float Distance = (TraceStart - TraceHit.ImpactPoint).Size();
+
+			if (TraceHit.GetActor() != InteractionData.CurrentInteractable && Distance <= InteractionCheckDistance)
+			{
+				FoundInteractable(TraceHit.GetActor());
+				return;
+			}
+
+			if (TraceHit.GetActor() == InteractionData.CurrentInteractable)
+			{
+				return;
+			}
+		}
+	}
+	NoInteract();
+}
+
+void APlayableCharacter::FoundInteractable(AActor *NewInteractable)
+{
+	if (IsInteracting())
+	{
+		EndInteract();
+	}
+
+	if (InteractionData.CurrentInteractable)
+	{
+		TargetInteractable = InteractionData.CurrentInteractable;
+		TargetInteractable->EndFocus();
+	}
+	InteractionData.CurrentInteractable = NewInteractable;
+	TargetInteractable = NewInteractable;
+
+	TargetInteractable->BeginFocus();
+}
+
+void APlayableCharacter::NoInteract()
+{
+	if (IsInteracting())
+	{
+		GetWorldTimerManager().ClearTimer(TimerHandle_Interaction);
+	}
+
+	if (InteractionData.CurrentInteractable)
+	{
+		if (IsValid(TargetInteractable.GetObject()))
+		{
+			TargetInteractable->EndFocus();
+		}
+
+		InteractionData.CurrentInteractable = nullptr;
+		TargetInteractable = nullptr;
+	}
+}
+
+void APlayableCharacter::BeginInteract()
+{
+	PerformInteractionCheck();
+	if (InteractionData.CurrentInteractable)
+	{
+		if (IsValid(TargetInteractable.GetObject()))
+		{
+			TargetInteractable->BeginInteract();
+
+			if (FMath::IsNearlyZero(TargetInteractable->InteractableData.InteractionDuration, 0.1f))
+			{
+				Interact();
+			}
+			else
+			{
+				GetWorldTimerManager().SetTimer(TimerHandle_Interaction, this, &APlayableCharacter::Interact, TargetInteractable->InteractableData.InteractionDuration, false);
+			}
+		}
+	}
+}
+
+void APlayableCharacter::EndInteract()
+{
+	if (IsInteracting())
+	{
+		GetWorldTimerManager().ClearTimer(TimerHandle_Interaction);
+		if (IsValid(TargetInteractable.GetObject()))
+		{
+			TargetInteractable->EndInteract();
+		}
+	}
+}
+
+void APlayableCharacter::Interact()
+{
+	GetWorldTimerManager().ClearTimer(TimerHandle_Interaction);
+
+	if (IsValid(TargetInteractable.GetObject()))
+	{
+		TargetInteractable->Interact(this);
+	}
+}
+
 
 void APlayableCharacter::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor->IsA(ACollisionActor::StaticClass()))
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Player Touch!!"));
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("myHealth = %f"), myHealth));
-		myHealth -= 0.5f;
+		CurHealth -= 20.0f;
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("myHealth = %f"), CurHealth));
+		
 	}
 }
 

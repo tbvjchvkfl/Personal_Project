@@ -5,11 +5,31 @@
 #include "CoreMinimal.h"
 #include "BaseCharacter.h"
 #include "UI_HUD_Widget.h"
+#include "InteractionInterface.h"
 #include "PlayableCharacter.generated.h"
 
 /**
  * 
  */
+
+
+USTRUCT()
+struct FInteractionData
+{
+	GENERATED_USTRUCT_BODY()
+
+	FInteractionData() : CurrentInteractable(nullptr), LastInteractionCheckTime(0.0f)
+	{
+	};
+
+	UPROPERTY()
+	AActor *CurrentInteractable;
+
+	UPROPERTY()
+	float LastInteractionCheckTime;
+
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDele_Dynamic);
 
 UCLASS()
@@ -21,7 +41,8 @@ class UE5_HORRORS_GAME_API APlayableCharacter : public ABaseCharacter
 	TSubclassOf<UUI_HUD_Widget> HUDWidgetClass;
 	UPROPERTY(VisibleAnywhere, Category = "Widget", meta = (AllowPrivateAccess = "true"))
 	UUI_HUD_Widget* HUDWidget;
-
+	
+	class UCircleHPBar* UHPBar;
 	void CreateHUD();
 
 	void BindingAmmoChagedDelegate() const;
@@ -35,6 +56,8 @@ public:
 
 public:
 	APlayableCharacter();
+
+	FORCEINLINE bool IsInteracting() const { return GetWorldTimerManager().IsTimerActive(TimerHandle_Interaction); };
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
@@ -63,7 +86,6 @@ protected:
 	
 
 public:
-
 	virtual void Tick(float DeltaTime) override;
 	UFUNCTION()
 	void OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -81,6 +103,8 @@ public:
 	UFUNCTION()
 	void EndReload();
 
+	void SetUIHealth();
+
 public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AProjectile> projectileActor;
@@ -90,4 +114,23 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Animation")
 	UAnimMontage* Change_Idle;
+
+protected:
+	UPROPERTY(VisibleAnywhere, Category = "Interaction")
+	TScriptInterface<IInteractionInterface> TargetInteractable;
+
+	float InteractionCheckFrequency;
+
+	float InteractionCheckDistance;
+
+	FTimerHandle TimerHandle_Interaction;
+
+	FInteractionData InteractionData;
+
+	void PerformInteractionCheck();
+	void FoundInteractable(AActor* NewInteractable);
+	void NoInteract();
+	void BeginInteract();
+	void EndInteract();
+	void Interact();
 };
