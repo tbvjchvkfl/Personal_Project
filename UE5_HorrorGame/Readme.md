@@ -22,5 +22,8 @@ Horror's Game
 >   - Interaction Object
 
 > ### UMG
->   - 
+>   - 인벤토리
+>   - 체력바
+>   - Aim UI
+
 
