@@ -7,21 +7,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Armor/Weapon_Pistol.h"
+#include "UI/InGameHUD.h"
 
-void APlayerCharacter::AttachWeapon(TSubclassOf<AWeapon_Pistol> WeaponClass)
-{
-	if (WeaponClass)
-	{
-		EquipWeapon = GetWorld()->SpawnActor<AWeapon_Pistol>(WeaponClass);
-
-		const USkeletalMeshSocket *WeaponSocket = GetMesh()->GetSocketByName("HandGun");
-
-		if (EquipWeapon && WeaponSocket)
-		{
-			WeaponSocket->AttachActor(EquipWeapon, GetMesh());
-		}
-	}
-}
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -82,6 +69,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCom
 	PlayerInputComponent->BindAction("Shoot", IE_Pressed, this, &APlayerCharacter::StartShoot);
 	PlayerInputComponent->BindAction("Shoot", IE_Released, this, &APlayerCharacter::EndShoot);
 
+	PlayerInputComponent->BindAction("Reload", IE_Released, this, &APlayerCharacter::StartReload);
+
 	// Bind Axis Functionary
 	PlayerInputComponent->BindAxis("MoveForward", this, &APlayerCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerCharacter::MoveRight);
@@ -92,6 +81,10 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCom
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	AttachWeapon(Weapon);
+
+	CreateHUD();
+	BindingAmmoChangedDelegate();
 }
 
 void APlayerCharacter::MoveForward(float Value)
@@ -137,14 +130,24 @@ void APlayerCharacter::EndRunning()
 
 void APlayerCharacter::StartShoot()
 {
+	if (bAimming && !bReloading)
+	{
+		EquipWeapon->StartShoot(this);
+	}
 }
 
 void APlayerCharacter::EndShoot()
 {
+	EquipWeapon->EndShoot();
 }
 
 void APlayerCharacter::StartReload()
 {
+	if (EquipWeapon->GetCurAmmo() == EquipWeapon->GetMaxAmmo())
+	{
+		return;
+	}
+
 	bReloading = true;
 	if (bAimming)
 	{
@@ -155,4 +158,53 @@ void APlayerCharacter::StartReload()
 void APlayerCharacter::EndReload()
 {
 	bReloading = false;
+	EquipWeapon->Reload();
+}
+
+void APlayerCharacter::CreateHUD()
+{
+	if (HUDWidgetClass)
+	{
+		HUDWidget = Cast<UInGameHUD>(CreateWidget(GetWorld(), HUDWidgetClass));
+
+		if (HUDWidget)
+		{
+			HUDWidget->AddToViewport();
+			HUDWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
+
+			int AmmoRemainCount = EquipWeapon ? EquipWeapon->GetCurAmmo() : 0;
+			int AmmoMaxCount = EquipWeapon ? EquipWeapon->GetMaxAmmo() : 0;
+
+			HUDWidget->Init(AmmoRemainCount, AmmoMaxCount);
+		}
+	}
+}
+
+void APlayerCharacter::BindingAmmoChangedDelegate() const
+{
+	if (EquipWeapon)
+	{
+		EquipWeapon->ShowUIDelegate.AddLambda([&]()
+			{
+				if (HUDWidget)
+				{
+					HUDWidget->SetAmmoCountText(EquipWeapon->GetCurAmmo(), EquipWeapon->GetMaxAmmo());
+				}
+			});
+	}
+}
+
+void APlayerCharacter::AttachWeapon(TSubclassOf<AWeapon_Pistol> WeaponClass)
+{
+	if (WeaponClass)
+	{
+		EquipWeapon = GetWorld()->SpawnActor<AWeapon_Pistol>(WeaponClass);
+
+		const USkeletalMeshSocket *WeaponSocket = GetMesh()->GetSocketByName("HandGun");
+
+		if (EquipWeapon && WeaponSocket)
+		{
+			WeaponSocket->AttachActor(EquipWeapon, GetMesh());
+		}
+	}
 }

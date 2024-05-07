@@ -2,26 +2,42 @@
 
 
 #include "Armor/WeaponBase.h"
+#include "Components/SkeletalMeshComponent.h"
 
-// Sets default values
 AWeaponBase::AWeaponBase()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>("WeaponMesh");
+	WeaponMesh->SetupAttachment(RootComponent);
 }
 
-// Called when the game starts or when spawned
-void AWeaponBase::BeginPlay()
+void AWeaponBase::DecreaseAmmoCount()
 {
-	Super::BeginPlay();
-	
+	--CurAmmoCount;
+	if (ShowUIDelegate.IsBound())
+	{
+		ShowUIDelegate.Broadcast();
+	}
 }
 
-// Called every frame
-void AWeaponBase::Tick(float DeltaTime)
+void AWeaponBase::ResetAmmoCount()
 {
-	Super::Tick(DeltaTime);
+	CurAmmoCount = MaxAmmoCount;
+	if (ShowUIDelegate.IsBound())
+	{
+		ShowUIDelegate.Broadcast();
+	}
+}
 
+void AWeaponBase::StartShoot(TWeakObjectPtr<APlayerCharacter> owner)
+{
+}
+
+void AWeaponBase::EndShoot()
+{
+}
+
+void AWeaponBase::Reload()
+{
 }
 

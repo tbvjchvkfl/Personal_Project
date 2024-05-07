@@ -27,11 +27,15 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
+	UPROPERTY(BlueprintReadOnly)
 	float CurHealth;
+	UPROPERTY(BlueprintReadOnly)
 	float MaxHealth;
 
 public:
+	UFUNCTION(BlueprintCallable)
 	float GetCurHealth() { return CurHealth; }
+	UFUNCTION(BlueprintCallable)
 	float GetMaxHealth() { return MaxHealth; }
 
 

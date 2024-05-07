@@ -7,7 +7,11 @@
 #include "PlayerCharacter.generated.h"
 
 
+
+class USpringArmComponent;
+class UCameraComponent;
 class AWeapon_Pistol;
+class UInGameHUD;
 
 UCLASS()
 class UE5_HORRORSGAME_API APlayerCharacter : public ABaseCharacter
@@ -21,16 +25,21 @@ public:
 	// ===========================================================
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
-	class USpringArmComponent *CameraBoom;
+	USpringArmComponent *CameraBoom;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
-	class UCameraComponent *FollowCamera;
+	UCameraComponent *FollowCamera;
 
-	TSubclassOf<AWeapon_Pistol> *Weapon;
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	TSubclassOf<AWeapon_Pistol> Weapon;
 
 	AWeapon_Pistol *EquipWeapon;
 
-	void AttachWeapon(TSubclassOf<AWeapon_Pistol> WeaponClass);
+	UPROPERTY(EditAnywhere, Category = "Widget")
+	TSubclassOf<UInGameHUD> HUDWidgetClass;
+	UPROPERTY(VisibleAnywhere, Category = "Widget")
+	UInGameHUD *HUDWidget;
+
 
 
 	FVector2D CameraInput;
@@ -47,9 +56,14 @@ public:
 	
 	virtual void Tick(float DeltaTime)override;
 	virtual void SetupPlayerInputComponent(class UInputComponent *PlayerInputComponent) override;
-	
+
+	void AttachWeapon(TSubclassOf<AWeapon_Pistol> WeaponClass);
 	void StartReload();
 	void EndReload();
+	
+	void CreateHUD();
+	void BindingAmmoChangedDelegate() const;
+
 
 protected:
 	// ===========================================================

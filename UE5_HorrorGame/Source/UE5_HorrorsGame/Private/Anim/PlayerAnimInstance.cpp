@@ -44,10 +44,10 @@ void UPlayerAnimInstance::StartReloading()
 void UPlayerAnimInstance::EndReloading()
 {
 	bIsReload = false;
-	/*if (PlayerCharacter)
+	if (PlayerCharacter)
 	{
 		PlayerCharacter->EndReload();
-	}*/
+	}
 }
 
 void UPlayerAnimInstance::StartAimming()

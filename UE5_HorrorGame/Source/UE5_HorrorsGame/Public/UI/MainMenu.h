@@ -3,33 +3,32 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Armor/WeaponBase.h"
-#include "Weapon_Pistol.generated.h"
+#include "Blueprint/UserWidget.h"
+#include "MainMenu.generated.h"
 
-/**
- * 
- */
+class APlayerCharacter;
+
 UCLASS()
-class UE5_HORRORSGAME_API AWeapon_Pistol : public AWeaponBase
+class UE5_HORRORSGAME_API UMainMenu : public UUserWidget
 {
 	GENERATED_BODY()
-	
 public:
 	// ===========================================================
 	// =                  Variable / Property					 =
 	// ===========================================================
-
+	UPROPERTY()
+	APlayerCharacter *PlayerCharacter;
 	
 
+protected:
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
-	AWeapon_Pistol();
+	virtual void  NativeOnInitialized() override;
+	virtual void NativeConstruct() override;
+	virtual bool NativeOnDrop(const FGeometry &InGeometry, const FDragDropEvent &InDragDropEvent, UDragDropOperation *InOperation) override;
 
-	virtual void StartShoot(TWeakObjectPtr<APlayerCharacter>owner)override;
-	virtual void EndShoot()override;
-	virtual void Reload()override;
 
-	void FireWithLineTrace(TWeakObjectPtr<APlayerCharacter>owner);
 
+	
 };
