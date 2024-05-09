@@ -6,27 +6,28 @@
 #include "Blueprint/UserWidget.h"
 #include "Inventory.generated.h"
 
-class UButton;
 class UWrapBox;
+class APlayerCharacter;
+class UItemBase;
+class UInventorySlot;
 
 UCLASS()
 class UE5_HORRORSGAME_API UInventory : public UUserWidget
 {
 	GENERATED_BODY()
+	
 public:
-	// ===========================================================
-	// =                  Variable / Property					 =
-	// ===========================================================
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory", meta = (BindWidget))
-	//UButton *CloseButton;
+	UPROPERTY(meta = (BindWidget))
+	UWrapBox *WrapBox;
 
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory", meta = /(BindWidget))
-	//UWrapBox *InventoryBox;
+	TSubclassOf<UInventorySlot> InventoryClass;
 
+	UInventorySlot *SlotWidget;
 
+	TArray<UItemBase *> InventoryItems;
 
-	// ===========================================================
-	// =					  Functionary	   				     = 
-	// ===========================================================
 	virtual void NativeConstruct()override;
+
+private:
+	APlayerCharacter *Player;
 };

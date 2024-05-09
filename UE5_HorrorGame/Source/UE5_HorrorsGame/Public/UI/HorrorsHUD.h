@@ -6,49 +6,38 @@
 #include "GameFramework/HUD.h"
 #include "HorrorsHUD.generated.h"
 
-class UMainMenu;
-class UInteractionWidget;
-struct FInteractableData;
+class UInGameHUD;
+class UInventory;
 
 UCLASS()
 class UE5_HORRORSGAME_API AHorrorsHUD : public AHUD
 {
 	GENERATED_BODY()
+	
 public:
-	// ===========================================================
-	// =                  Variable / Property					 =
-	// ===========================================================
-	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
-	TSubclassOf<UMainMenu> MainMenuClass;
 
-	//UPROPERTY(EditDefaultsOnly, Category = "Widgets")
-	//TSubclassOf<UInteractionWidget> InteractionWidgetClass;
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
+	TSubclassOf<UInGameHUD> InGameHUD;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
+	TSubclassOf<UInventory> Inventory;
 
 	bool bIsMenuVisible;
 
-	// ===========================================================
-	// =					  Functionary	   				     = 
-	// ===========================================================
 	AHorrorsHUD();
+
 	void DisplayMenu();
 	void HideMenu();
 
-	void ShowInteractionWidget();
-	void HideInteractionWdiget();
-	void UpdateInteractionWidget(const FInteractableData *InteractableData);
+	void ToggleMenu();
 
 protected:
+	UPROPERTY()
+	UInGameHUD *InGameHUDWidget;
 
 	UPROPERTY()
-	UMainMenu *MainMenuWidget;
+	UInventory *InventoryWidget;
 
-	//UPROPERTY()
-	//UInteractionWidget *InteractionWidget;
+	virtual void BeginPlay()override;
 
-
-	// ===========================================================
-	// =					  Functionary	   				     = 
-	// ===========================================================
-
-	virtual void BeginPlay() override;
 };
