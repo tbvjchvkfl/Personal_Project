@@ -2,7 +2,7 @@
 
 
 #include "UI/HorrorsHUD.h"
-#include "UI/MainMenu.h"
+#include "UI/Inventory.h"
 
 AHorrorsHUD::AHorrorsHUD()
 {
@@ -10,64 +10,56 @@ AHorrorsHUD::AHorrorsHUD()
 
 void AHorrorsHUD::DisplayMenu()
 {
-	if (MainMenuWidget)
+	if (InventoryWidget)
 	{
 		bIsMenuVisible = true;
-		MainMenuWidget->SetVisibility(ESlateVisibility::Visible);
+		InventoryWidget->SetVisibility(ESlateVisibility::Visible);
 	}
 }
 
 void AHorrorsHUD::HideMenu()
 {
-	if (MainMenuWidget)
+	if (InventoryWidget)
 	{
 		bIsMenuVisible = false;
-		MainMenuWidget->SetVisibility(ESlateVisibility::Collapsed);
+		InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }
 
-void AHorrorsHUD::ShowInteractionWidget()
+void AHorrorsHUD::ToggleMenu()
 {
-	/*if (InteractionWidget)
+	if (bIsMenuVisible)
 	{
-		MainMenuWidget->SetVisibility(ESlateVisibility::Visible);
-	}*/
+		HideMenu();
+
+		const FInputModeGameOnly InputMode;
+		GetOwningPlayerController()->SetInputMode(InputMode);
+		GetOwningPlayerController()->SetShowMouseCursor(false);
+	}
+	else
+	{
+		DisplayMenu();
+		const FInputModeGameAndUI InputMode;
+		GetOwningPlayerController()->SetInputMode(InputMode);
+		GetOwningPlayerController()->SetShowMouseCursor(true);
+	}
 }
 
-void AHorrorsHUD::HideInteractionWdiget()
+void AHorrorsHUD::AddInventoryItem()
 {
-	/*if (InteractionWidget)
+	if (Inventory)
 	{
-		MainMenuWidget->SetVisibility(ESlateVisibility::Visible);
-	}*/
-}
-
-void AHorrorsHUD::UpdateInteractionWidget(const FInteractableData *InteractableData)
-{
-	/*if (InteractionWidget)
-	{
-		if (InteractionWidget->GetVisibility() == ESlateVisibility::Collapsed)
-		{
-			InteractionWidget->SetVisibility(ESlateVisibility::Visible);
-		}
-	}*/
+		InventoryWidget->AddItemToInventory();
+	}
 }
 
 void AHorrorsHUD::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (MainMenuClass)
+	if (Inventory)
 	{
-		MainMenuWidget = CreateWidget<UMainMenu>(GetWorld(), MainMenuClass);
-		MainMenuWidget->AddToViewport();
-		MainMenuWidget->SetVisibility(ESlateVisibility::Collapsed);
+		InventoryWidget = CreateWidget<UInventory>(GetWorld(), Inventory);
+		InventoryWidget->AddToViewport();
+		InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
 	}
-
-	/*if (InteractionWidgetClass)
-	{
-		InteractionWidget = CreateWidget<UInteractionWidget>(GetWorld(), InteractionWidgetClass);
-		InteractionWidget->AddToViewport();
-		InteractionWidget->SetVisibility(ESlateVisibility::Collapsed);
-	}*/
 }
