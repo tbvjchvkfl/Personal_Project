@@ -19,9 +19,11 @@ Horror's Game
 
 > ### Level Object
 >   - Collision Object
->   - Interaction Object
 
 > ### UMG
 >   - 인벤토리
+>     - 아이템 획득 시 아이템 항목 생성
+>     - 아이템 항목 클릭 시 아이템 사용
+
 >   - 체력바
 >   - Aim UI
