@@ -7,9 +7,11 @@
 #include "Inventory.generated.h"
 
 class UWrapBox;
+class UTextBlock;
 class APlayerCharacter;
-class UItemBase;
+class APickUpItem;
 class UInventorySlot;
+struct FItemData;
 
 UCLASS()
 class UE5_HORRORSGAME_API UInventory : public UUserWidget
@@ -20,14 +22,27 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UWrapBox *WrapBox;
 
-	TSubclassOf<UInventorySlot> InventoryClass;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock *CoinText;
+
+	FItemData *ItemReference;
+
+	UPROPERTY(EditAnywhere, Category = "ItemSlot")
+	TSubclassOf<UUserWidget> InventoryClass;
 
 	UInventorySlot *SlotWidget;
 
-	TArray<UItemBase *> InventoryItems;
+	TArray<FItemData*> InventoryItems;
+
+	APlayerCharacter *Player;
+
+	APickUpItem *Items;
+
+	bool JustSetCoinData;
 
 	virtual void NativeConstruct()override;
 
-private:
-	APlayerCharacter *Player;
+	void AddItemToInventory();
+
+	void BindingCoinText();
 };

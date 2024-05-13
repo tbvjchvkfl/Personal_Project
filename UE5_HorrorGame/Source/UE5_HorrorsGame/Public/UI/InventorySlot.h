@@ -6,9 +6,10 @@
 #include "Blueprint/UserWidget.h"
 #include "InventorySlot.generated.h"
 
-class UItemBase;
 class UTextBlock;
 class UImage;
+class UButton;
+struct FItemData;
 
 UCLASS()
 class UE5_HORRORSGAME_API UInventorySlot : public UUserWidget
@@ -27,19 +28,26 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UImage *ItemImage;
 
-	UItemBase* ItemBase;
+	UPROPERTY(meta = (BindWidget))
+	UButton *UseButton;
+
+	FItemData *ItemData;
 
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
-
-	void SetItemSlot(UItemBase* ItemReference);
-
+	void SetItemSlot(FItemData* ItemSlot);
 
 protected:
-	virtual void NativeConstruct()override;
+	// ===========================================================
+	// =                  Variable / Property					 =
+	// ===========================================================
+
+
 
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
+
+	virtual void NativeConstruct()override;
 };
