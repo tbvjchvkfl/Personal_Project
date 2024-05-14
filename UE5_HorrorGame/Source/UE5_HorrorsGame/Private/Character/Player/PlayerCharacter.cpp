@@ -8,7 +8,9 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Armor/Weapon_Pistol.h"
 #include "UI/InGameHUD.h"
-
+#include "Object/Item/PickUpItem.h"
+#include "UI/HorrorsHUD.h"
+#include "UI/Inventory.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -26,9 +28,9 @@ APlayerCharacter::APlayerCharacter()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->MaxWalkSpeed = 200.0f;
 	
-
 	MaxHealth = 100.0f;
 	CurHealth = MaxHealth;
+
 }
 
 void APlayerCharacter::Tick(float DeltaTime)
@@ -71,6 +73,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCom
 
 	PlayerInputComponent->BindAction("Reload", IE_Released, this, &APlayerCharacter::StartReload);
 
+	PlayerInputComponent->BindAction("Interaction", IE_Released, this, &APlayerCharacter::Interaction);
+
+	PlayerInputComponent->BindAction("Inventory", IE_Released, this, &APlayerCharacter::ShowInventory);
+
+	PlayerInputComponent->BindAction("SubAcion", IE_Released, this, &APlayerCharacter::DoSubAction);
 	// Bind Axis Functionary
 	PlayerInputComponent->BindAxis("MoveForward", this, &APlayerCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerCharacter::MoveRight);
@@ -85,6 +92,9 @@ void APlayerCharacter::BeginPlay()
 
 	CreateHUD();
 	BindingAmmoChangedDelegate();
+	
+	HUD = Cast<AHorrorsHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
+	Inventory = Cast<UInventory>(GetWorld());
 }
 
 void APlayerCharacter::MoveForward(float Value)
@@ -141,6 +151,48 @@ void APlayerCharacter::EndShoot()
 	EquipWeapon->EndShoot();
 }
 
+void APlayerCharacter::StartInteract()
+{
+	CurHealth -= 10.0f;
+}
+
+void APlayerCharacter::EndInteract()
+{
+
+}
+
+void APlayerCharacter::Interaction()
+{
+	FVector TraceStart{ GetPawnViewLocation() };
+	FVector TraceEnd{ TraceStart + (GetControlRotation().Vector() * 1500.0f) };
+	
+	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Green, false, 1.0f);
+
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+	FHitResult TraceHit;
+
+	if (GetWorld()->LineTraceSingleByChannel(TraceHit, TraceStart, TraceEnd, ECC_Visibility, QueryParams))
+	{
+		if (AActor *Actor = TraceHit.GetActor())
+		{
+			for (FName Tag : Actor->Tags)
+			{
+				if (Tag.ToString() == "PickUp")
+				{
+					IPickUpInterface *interface = Cast<IPickUpInterface>(Actor);
+					interface->Interact(this);
+				}
+			}
+		}
+	}
+}
+
+void APlayerCharacter::DoSubAction()
+{
+	CurHealth -= 10.0f;
+}
+
 void APlayerCharacter::StartReload()
 {
 	if (EquipWeapon->GetCurAmmo() == EquipWeapon->GetMaxAmmo())
@@ -192,6 +244,71 @@ void APlayerCharacter::BindingAmmoChangedDelegate() const
 				}
 			});
 	}
+}
+
+void APlayerCharacter::ShowInventory()
+{
+	HUD->ToggleMenu();
+}
+
+void APlayerCharacter::AddItem(FItemData* Item)
+{
+	if (Item && Item->ItemType == EItemType::Coin)
+	{
+		PlayerCoin += Item->Amount;
+		HUD->AddInventoryItem();
+	}
+	else
+	{
+		PlayerItem.Add(Item);
+		HUD->AddInventoryItem();
+		PlayerItem.Pop();
+	}
+	/*int index = FindStack(Item);
+	if (index == -1)
+	{
+		FItemData* newItemSlot;
+		newItemSlot->Amount = Item->Amount;
+		newItemSlot->ItemType = Item->ItemType;
+		newItemSlot->TextData = Item->TextData;
+		newItemSlot->AssetData = Item->AssetData;
+		PlayerItem.Add(newItemSlot);
+		HUD->AddInventoryItem();
+		PlayerItem.Pop();
+	}
+	else
+	{
+		PlayerItem[index]->Amount += Item->Amount
+	}*/
+	//if (Item)
+	//{
+	//	PlayerItem.Add(Item);
+	//	HUD->AddInventoryItem();
+	//	PlayerItem.Pop();
+	//}
+}
+
+TArray<FItemData*> APlayerCharacter::GetInventoryItem()
+{
+	return PlayerItem;
+}
+
+int32 APlayerCharacter::GetPlayerCoin()
+{
+	return PlayerCoin;
+}
+
+int APlayerCharacter::FindStack(FItemData* Item)
+{
+	for (int i = 0; i < PlayerItem.Num(); i++)
+	{
+		if (PlayerItem[i] == Item)
+		{
+			return i;
+		}
+	}
+
+	return -1;
 }
 
 void APlayerCharacter::AttachWeapon(TSubclassOf<AWeapon_Pistol> WeaponClass)
