@@ -45,4 +45,8 @@ public:
 	void AddItemToInventory();
 
 	void BindingCoinText();
+
+	UFUNCTION(BlueprintCallable)
+	void RemoveItem();
+	
 };

@@ -9,6 +9,8 @@
 class UTextBlock;
 class UImage;
 class UButton;
+class APlayerCharacter;
+class UInventory;
 struct FItemData;
 
 UCLASS()
@@ -28,15 +30,25 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UImage *ItemImage;
 
-	UPROPERTY(meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UButton *UseButton;
 
 	FItemData *ItemData;
+
+	APlayerCharacter *MyPlayer;
+
+	UInventory *MyInventory;
 
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
 	void SetItemSlot(FItemData* ItemSlot);
+
+	UFUNCTION(BlueprintCallable)
+	void UseItem();
+	
+	
+
 
 protected:
 	// ===========================================================
@@ -48,6 +60,6 @@ protected:
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
-
+	float UseHealthPotion();
 	virtual void NativeConstruct()override;
 };
