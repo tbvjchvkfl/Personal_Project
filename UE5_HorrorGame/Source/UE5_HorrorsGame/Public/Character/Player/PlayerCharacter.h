@@ -12,6 +12,8 @@ class USpringArmComponent;
 class UCameraComponent;
 class AWeapon_Pistol;
 class UInGameHUD;
+class IInteractionInterface;
+
 
 UCLASS()
 class UE5_HORRORSGAME_API APlayerCharacter : public ABaseCharacter
@@ -40,8 +42,6 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Widget")
 	UInGameHUD *HUDWidget;
 
-
-
 	FVector2D CameraInput;
 	float ZoomFactor;
 	bool bRunning;
@@ -63,19 +63,27 @@ public:
 	
 	void CreateHUD();
 	void BindingAmmoChangedDelegate() const;
+	void ShowInventory();
 
+
+
+	void AddItem(FItemData *Item);
+
+	TArray<FItemData*> GetInventoryItem();
+	int32 GetPlayerCoin();
+
+	int FindStack(FItemData* Item);
 
 protected:
 	// ===========================================================
 	// =                  Variable / Property					 =
 	// ===========================================================
 
+	class AHorrorsHUD *HUD;
+	class UInventory *Inventory;
 
-
-
-
-
-
+	TArray<FItemData*> PlayerItem;
+	int32 PlayerCoin;
 
 	// ===========================================================
 	// =					  Functionary	   				     = 
@@ -89,6 +97,9 @@ protected:
 	void EndRunning();
 	void StartShoot();
 	void EndShoot();
-
-
+	void StartInteract();
+	void EndInteract();
+	void Interaction();
+	void DoSubAction();
+	
 };
