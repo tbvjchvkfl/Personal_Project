@@ -10,6 +10,7 @@
 #include "UI/HorrorsHUD.h"
 #include "Data/ItemStruct.h"
 #include "Object/Item/PickUpItem.h"
+#include "Components/Button.h"
 
 
 // Add to Viewport 할 때 불리는 함수`
@@ -38,6 +39,17 @@ void UInventory::AddItemToInventory()
 					WrapBox->AddChild(SlotWidget);
 				}
 			}
+		}
+	}
+}
+
+void UInventory::RemoveItem()
+{
+	for (int i = 0; i < InventoryItems.Num(); i++)
+	{
+		if (InventoryItems[i]->Amount < 1)
+		{
+			WrapBox->RemoveChild(SlotWidget);
 		}
 	}
 }
