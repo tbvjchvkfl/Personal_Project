@@ -18,21 +18,12 @@ public:
 	// ===========================================================
 	// =                  Variable / Property					 =
 	// ===========================================================
-	float AISightRadius = 500.0f;
-	float AISightAge = 5.0f;
-	float AILoseSightRadius = AISightRadius + 25.0f;
-	float AIFieldOfView = 90.0f;
-
-	UAISenseConfig_Sight *SightConfig;
-
 
 
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
 	AAI_Controller();
-	UFUNCTION()
-	void OnTargetDetected(AActor *Actor, FAIStimulus const Stimulus);
 	virtual FRotator GetControlRotation() const override;
 	
 
@@ -46,11 +37,15 @@ private:
 	UPROPERTY(Transient)
 	UBehaviorTreeComponent *BehaviorComp;
 
+	UAISenseConfig_Sight *SightConfig;
 
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
+	void SetupPerceptionSystem();
 
+	UFUNCTION()
+	void OnTargetDetected(AActor *Actor, FAIStimulus const Stimulus);
 
 protected:
 	// ===========================================================
