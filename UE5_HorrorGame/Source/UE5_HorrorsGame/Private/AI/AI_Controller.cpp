@@ -3,34 +3,48 @@
 
 #include "AI/AI_Controller.h"
 #include "Perception/AIPerceptionComponent.h"
+#include "Perception/AIPerceptionTypes.h"
 #include "Perception/AISenseConfig_Sight.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "Character/Enemy/EnemyCharacter.h"
+#include "Character/Player/PlayerCharacter.h"
+#include "BehaviorTree/BlackboardComponent.h"
 
 AAI_Controller::AAI_Controller()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	SetupPerceptionSystem();
+}
 
+void AAI_Controller::SetupPerceptionSystem()
+{
 	SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sight Config"));
-	SetPerceptionComponent(*CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("Perception Component")));
+	if (SightConfig)
+	{
+		SetPerceptionComponent(*CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("Perception Component")));
 
-	SightConfig->SightRadius = AISightRadius;
-	SightConfig->LoseSightRadius = AILoseSightRadius;
-	SightConfig->PeripheralVisionAngleDegrees = AIFieldOfView;
-	SightConfig->SetMaxAge(AISightAge);
-	SightConfig->AutoSuccessRangeFromLastSeenLocation = 520.f;
+		SightConfig->SightRadius = 500.0f;
+		SightConfig->LoseSightRadius = SightConfig->SightRadius + 25.0f;
+		SightConfig->PeripheralVisionAngleDegrees = 90.0f;
+		SightConfig->SetMaxAge(5.0f);
+		SightConfig->AutoSuccessRangeFromLastSeenLocation = 520.f;
 
-	SightConfig->DetectionByAffiliation.bDetectEnemies = true;
-	SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
-	SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
+		SightConfig->DetectionByAffiliation.bDetectEnemies = true;
+		SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
+		SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
 
-	GetPerceptionComponent()->SetDominantSense(*SightConfig->GetSenseImplementation());
-	GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &AAI_Controller::OnTargetDetected);
-	GetPerceptionComponent()->ConfigureSense(*SightConfig);
+		GetPerceptionComponent()->SetDominantSense(*SightConfig->GetSenseImplementation());
+		GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &AAI_Controller::OnTargetDetected);
+		GetPerceptionComponent()->ConfigureSense(*SightConfig);
+	}
 }
 
 void AAI_Controller::OnTargetDetected(AActor *Actor, FAIStimulus const Stimulus)
 {
+	if (auto *const ch = Cast<APlayerCharacter>(Actor))
+	{
+		GetBlackboardComponent()->SetValueAsBool("CanSeePlayer", Stimulus.WasSuccessfullySensed());
+	}
 }
 
 FRotator AAI_Controller::GetControlRotation() const
@@ -60,15 +74,6 @@ void AAI_Controller::OnPossess(APawn *InPawn)
 void AAI_Controller::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (GetPerceptionComponent() != nullptr)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("All Systems Set!"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No Component"));
-	}
 }
 
 void AAI_Controller::Tick(float DeltaSeconds)
