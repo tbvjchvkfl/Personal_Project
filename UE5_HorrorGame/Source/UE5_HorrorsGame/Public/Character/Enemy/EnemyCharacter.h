@@ -4,12 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "Character/BaseCharacter.h"
+#include "Interface/EnemyCombatInterface.h"
+#include "Animation/AnimMontage.h"
 #include "EnemyCharacter.generated.h"
 
 class UBehaviorTree;
 
 UCLASS()
-class UE5_HORRORSGAME_API AEnemyCharacter : public ABaseCharacter
+class UE5_HORRORSGAME_API AEnemyCharacter : public ABaseCharacter, public IEnemyCombatInterface
 {
 	GENERATED_BODY()
 public:
@@ -17,7 +19,7 @@ public:
 	// =                  Variable / Property					 =
 	// ===========================================================
 	
-
+	
 
 
 	// ===========================================================
@@ -26,6 +28,13 @@ public:
 	AEnemyCharacter();
 	UBehaviorTree *GetBehaviorTree() const;
 
+	UAnimMontage *GetScreamMontage() const;
+
+	UAnimMontage *GetAttackMontage() const;
+
+	int MeleeAttack_Implementation() override;
+
+	int ScreamAction_Implementation() override;
 protected:
 	// ===========================================================
 	// =                  Variable / Property					 =
@@ -39,4 +48,21 @@ protected:
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
+
+private:
+	// ===========================================================
+	// =                  Variable / Property					 =
+	// ===========================================================
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage *AttackMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage *ScreamMontage;
+
+	// ===========================================================
+	// =					  Functionary	   				     = 
+	// ===========================================================
+
+
 };
