@@ -4,21 +4,22 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/Services/BTService_BlackboardBase.h"
-#include "BTService_IsPlayerInMeleeRange.generated.h"
+#include "BTService_ChangeSpeed.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UE5_HORRORSGAME_API UBTService_IsPlayerInMeleeRange : public UBTService_BlackboardBase
+class UE5_HORRORSGAME_API UBTService_ChangeSpeed : public UBTService_BlackboardBase
 {
 	GENERATED_BODY()
 	
 public:
-	UBTService_IsPlayerInMeleeRange();
-	void OnBecomeRelevant(UBehaviorTreeComponent &OwnerComp, uint8 *NodeMemory) override;
+	UBTService_ChangeSpeed();
+
+	virtual void OnBecomeRelevant(UBehaviorTreeComponent &OwnerComp, uint8* NodeMemory)override;
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
-	float MeleeRange = 100.0f;
+	float Speed = 600.0f;
 };
