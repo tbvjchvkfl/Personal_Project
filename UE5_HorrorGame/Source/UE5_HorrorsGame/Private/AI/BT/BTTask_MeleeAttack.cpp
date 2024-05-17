@@ -2,4 +2,45 @@
 
 
 #include "AI/BT/BTTask_MeleeAttack.h"
+#include "Interface/EnemyCombatInterface.h"
+#include "AI/AI_Controller.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Runtime/Engine/Classes/Engine/World.h"
+#include "Engine/LatentActionManager.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Animation/AnimMontage.h"
+#include "Animation/AnimInstance.h"
 
+UBTTask_MeleeAttack::UBTTask_MeleeAttack()
+{
+    NodeName = TEXT("Melee Attack");
+}
+
+EBTNodeResult::Type UBTTask_MeleeAttack::ExecuteTask(UBehaviorTreeComponent &OwnerComp, uint8 *NodeMemory)
+{
+    auto const OutOfRange = !OwnerComp.GetBlackboardComponent()->GetValueAsBool(GetSelectedBlackboardKey());
+    if (OutOfRange)
+    {
+        FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+        return EBTNodeResult::Succeeded;
+    }
+
+    auto const *const Controller = OwnerComp.GetAIOwner();
+    auto *const NPC = Cast<AEnemyCharacter>(Controller->GetPawn());
+
+    if (auto *const iCombat = Cast<IEnemyCombatInterface>(NPC))
+    {
+        if (MontageHasFinished(NPC))
+        {
+            iCombat->Execute_MeleeAttack(NPC);
+        }
+    }
+    
+    FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+    return EBTNodeResult::Succeeded;
+}
+
+bool UBTTask_MeleeAttack::MontageHasFinished(AEnemyCharacter *const NPC)
+{
+    return NPC->GetMesh()->GetAnimInstance()->Montage_GetIsStopped(NPC->GetAttackMontage());
+}
