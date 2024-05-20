@@ -18,8 +18,14 @@ public:
 	// ===========================================================
 	// =                  Variable / Property					 =
 	// ===========================================================
+	UPROPERTY(EditAnywhere, Category = "Effect")
+	UParticleSystem *MuzzleFlash;
 
-	
+	UPROPERTY(EditAnywhere, Category = "Sound")
+	USoundBase *MuzzleSound;
+
+	UPROPERTY(EditAnywhere, Category = "Effect")
+	UParticleSystem *Impact;
 
 	// ===========================================================
 	// =					  Functionary	   				     = 
@@ -32,4 +38,5 @@ public:
 
 	void FireWithLineTrace(TWeakObjectPtr<APlayerCharacter>owner);
 
+	void SpawnEffect();
 };
