@@ -12,8 +12,15 @@ Bug's Game
 -
 
 
-코드 구성
+코드 상세
 -
+
+> Framework
+
+> Player
+
+> Bug
+
 
 
 시행착오
