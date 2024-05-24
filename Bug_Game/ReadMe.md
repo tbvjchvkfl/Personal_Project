@@ -16,12 +16,16 @@ Bug's Game
 코드 상세
 -
 
-> Framework
+> ### Framework
+>   - ㅁㄴㅇㄹ
 
-> Player
+> ### Player
+>   - Input
+>   - Draw
 
-> Bug
-
+> ### Bug
+>   - Movement
+>   - Collision
 
 
 시행착오
