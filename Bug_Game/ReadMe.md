@@ -10,6 +10,7 @@ Bug's Game
 
 클래스 구조
 -
+![Class Diagram](https://github.com/tbvjchvkfl/Personal_Project/assets/137769043/a3b02ea4-32fd-4111-844b-d6827675363a)
 
 
 코드 상세
