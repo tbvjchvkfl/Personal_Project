@@ -6,6 +6,7 @@ Bug's Game
 
 플레이 영상
 -
+https://github.com/tbvjchvkfl/Personal_Project/assets/137769043/ea1e1ef8-9990-4ad3-a1ae-f819a8768bef
 
 제작 기간 & 사용 기술
 -
