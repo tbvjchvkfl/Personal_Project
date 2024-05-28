@@ -93,15 +93,88 @@ Horror's Game
 >       </pre>
 >
 >     - 이후 Aim-Offset을 이용하여 조준하는 동안 카메라 회전에 따라 팔의 위치를 바꾸어주었습니다.
->     - 이미지 예시(블루프린트)
+>       <img width="700" alt="image" src="https://github.com/tbvjchvkfl/Personal_Project/assets/137769043/ca53eaa6-a9ea-46d8-9e89-8fb073f9332d">
+>
+>  - 상호작용
+>    - LineTraceSingleByChannel을 사용하였으며, ItemObject에 Tag를 추가하여 TraceCollisionChannel과 해당 Tag를 가진 액터가 충돌하면 인터렉션하게 구현했습니다.
+>    - <pre>
+>          <code>
+>            void APlayerCharacter::Interaction()
+>            {
+>            	FVector TraceStart{ GetPawnViewLocation() };
+>            	FVector TraceEnd{ TraceStart + (GetControlRotation().Vector() * 1500.0f) };
+>            	
+>            	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Green, false, 1.0f);
+>            
+>            	FCollisionQueryParams QueryParams;
+>            	QueryParams.AddIgnoredActor(this);
+>            	FHitResult TraceHit;
+>            
+>            	if (GetWorld()->LineTraceSingleByChannel(TraceHit, TraceStart, TraceEnd, ECC_Visibility, QueryParams))
+>            	{
+>            		if (AActor *Actor = TraceHit.GetActor())
+>            		{
+>            			for (FName Tag : Actor->Tags)
+>            			{
+>            				if (Tag.ToString() == "PickUp")
+>            				{
+>            					IPickUpInterface *interface = Cast<IPickUpInterface>(Actor);
+>            					interface->Interact(this);
+>            				}
+>            			}
+>            		}
+>            	}
+>            }
+>          </code>
+>       </pre>
+
 
 >  ### Weapon
 >   - 사격
+>     - 무기 클래스를 만들 때 확장성을 고려하여 WeaponBase 클래스를 만들어 무기의 속성들을 정해주었고, 해당 클래스를 상속하여 하위 클래스를 만들었습니다.
+>     - LineTraceSingleByChannel을 사용하여 총기 사격을 구현했습니다.
 >     - <pre>
 >          <code>
->            a
->            a
->            a
+>             void AWeapon_Pistol::FireWithLineTrace(TWeakObjectPtr<APlayerCharacter> owner)
+>             {
+>            	  auto Character = owner.Get();
+>            	  if (Character)
+>               {
+>              	 	AController *ownerController = Character->GetController();
+>             		if (ownerController)
+>             		{
+>             			FVector StartTrace = WeaponMesh->GetSocketLocation("FirePoint");
+>             			FVector EndTrace = StartTrace + Character->FollowCamera->GetForwardVector() * TraceDistance;
+>             			FCollisionQueryParams CollisionParam;
+>             			CollisionParam.AddIgnoredActor(this);
+>             			FHitResult HitTrace;
+>             
+>             			if (GetWorld()->LineTraceSingleByChannel(HitTrace, StartTrace, EndTrace, ECC_Visibility, CollisionParam))
+>             			{
+>             				FRotator Rotation;
+>             				FVector ShotDirection = -Rotation.Vector();
+>             				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Impact, HitTrace.Location, ShotDirection.Rotation());
+>             				
+>             				if (HitTrace.bBlockingHit)
+>             				{
+>             					if(auto *NPC = Cast<AEnemyCharacter>(HitTrace.GetActor()))
+>             					{
+>             						UGameplayStatics::ApplyDamage(NPC, 20.0f, NULL, this, UDamageType::StaticClass());
+>             
+>             						GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Cyan, FString::Printf(TEXT("HP : %f"), NPC->GetCurHealth()));
+>             					}
+>             				}
+>             			}
+>             			
+>             			DecreaseAmmoCount();
+>             
+>             			if (CurAmmoCount == 0)
+>             			{
+>             				Character->StartReload();
+>             			}
+>             		}
+>               }
+>             }
 >          </code>
 >       </pre>
 
