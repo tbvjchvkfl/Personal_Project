@@ -185,7 +185,102 @@ Horror's Game
 >   - AI_FoundLocationSystem
 
 > ### Level Object
->   - Collision Object
+>   - PickUpItem
+>     - 빈 클래스에 언리얼 struct를 선언하고 FTableRow를 상속받아 후에 PickUpItem들의 정보로 이용할 ItemBase를 만들었습니다.
+>     - <pre>
+>         <code>
+>           UENUM()
+>           enum class EItemType : uint8
+>           {
+>     	      Armor UMETA(DisplayName = "Armor"),
+>     	      Weapon UMETA(DisplayName = "Weapon"),
+>     	      Coin UMETA(DisplayName = "Coin"),
+>     	      Consumable UMETA(DisplayName = "Consumable")
+>           };
+>           USTRUCT()
+>           struct FItemTextData
+>           {
+>     	      GENERATED_USTRUCT_BODY()
+>           
+>     	      UPROPERTY(EditAnywhere)
+>     	      FString Name;
+>         
+>     	      UPROPERTY(EditAnywhere)
+>     	      FString Description;
+>           };
+>           USTRUCT()
+>           struct FItemAssetData
+>           {
+>     	      GENERATED_USTRUCT_BODY()
+>           
+>     	      UPROPERTY(EditAnywhere)
+>     	      UTexture2D *Icon;
+>           
+>     	      UPROPERTY(EditAnywhere)
+>       	    UStaticMesh *Mesh;
+>           };
+>           USTRUCT(BlueprintType)
+>           struct FItemData : public FTableRowBase
+>           {
+>     	      GENERATED_USTRUCT_BODY()
+>           
+>     	      UPROPERTY(EditAnywhere)
+>     	      int32 Amount;
+>           
+>     	      UPROPERTY(EditAnywhere)
+>     	      EItemType ItemType;
+>       
+>     	      UPROPERTY(EditAnywhere)
+>     	      FItemTextData TextData;
+>           
+>     	      UPROPERTY(EditAnywhere)
+>     	      FItemAssetData AssetData;
+>           };
+>         </code>
+>       </pre>
+>
+>      - 위에서 만든 ItemBase를 토대로 데이터테이블 에셋을 만들고, 실제 상호작용할 액터 클래스를 만들어 FObjectFinder를 이용하여 해당 데이터테이블 에셋을 가져왔습니다.
+>      - <pre>
+>           <code>
+>             APickUpItem::APickUpItem()
+>             {
+>             	PrimaryActorTick.bCanEverTick = true;
+>             
+>     	        ItemMesh = CreateDefaultSubobject<UStaticMeshComponent>("ItemMesh");
+>     	        SetRootComponent(ItemMesh);
+>             
+>             	// 데이터 테이블 불러오기
+>             	ConstructorHelpers::FObjectFinder<UDataTable>DataTable(TEXT("DataTable'/Game/HorrorsGame/Data/ItemDataTable.ItemDataTable'"));
+>             	
+>     	        if (DataTable.Succeeded())
+>     	        {
+>     	        	ItemDataTable = DataTable.Object;
+>     	        	ItemRowHandle.DataTable = ItemDataTable;
+>             	}
+>             }
+>           </code>
+>         </pre>
+> 
+>      - BeginPlay함수와 OnConstruction함수에서 아래 코드들을 실행시켜 주었습니다.
+>      - <pre>
+>           <code>
+>             void APickUpItem::BeginPlay()
+>             {
+>             	Super::BeginPlay();
+>             	// 데이터 테이블 바인딩
+>           	  ItemRow = ItemDataTable->FindRow<FItemData>(ItemRowHandle.RowName, "");
+>             }
+>             
+>             void APickUpItem::OnConstruction(const FTransform &Transform)
+>             {
+>             	ItemRow = ItemDataTable->FindRow<FItemData>(ItemRowHandle.RowName, "");
+>             	if (ItemRow)
+>     	        {
+>     	        	ItemMesh->SetStaticMesh(ItemRow->AssetData.Mesh);
+>           	  }
+>             }
+>           </code>
+>         </pre>
 
 > ### UMG
 >   - 인벤토리
