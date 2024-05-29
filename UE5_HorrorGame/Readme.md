@@ -16,7 +16,7 @@ Horror's Game
 기능 구현
 -
 
-> ### Playable Character
+> ### Player Character
 >   - 이동
 >       - 키보드 WASD 버튼에 키를 할당하고 AddtoMovement함수를 사용하여 구현하였으며, Yaw회전을 적용시켜 입력된 버튼의 방향으로 Yaw회전할 수 있게 구현했습니다.
 >      - <pre>
@@ -178,11 +178,146 @@ Horror's Game
 >          </code>
 >       </pre>
 
-> ### Zombie_AI
->   - 시야각
->   - 근접 공격
->   - 추격(이동)
->   - AI_FoundLocationSystem
+> ### EnemyCharacter
+>   - AIController
+>     - 생성자에서 UAISenseConfig_Sight클래스를 사용하여 해당 컨트롤러를 사용하는 Character가 시야를 가질 수 있도록 탐지 가능 범위, 타겟인식이 해제되는 조건 등을 구현해주었습니다.
+>     - <pre>
+>         <code>
+>             AAI_Controller::AAI_Controller()
+>             {
+>             	SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sight Config"));
+>               if (SightConfig)
+>               {
+>               	SetPerceptionComponent(*CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("Perception Component")));
+>               
+>               	SightConfig->SightRadius = 500.0f;
+>               	SightConfig->LoseSightRadius = SightConfig->SightRadius + 25.0f;
+>               	SightConfig->PeripheralVisionAngleDegrees = 90.0f;
+>               	SightConfig->SetMaxAge(5.0f);
+>               	SightConfig->AutoSuccessRangeFromLastSeenLocation = 520.f;
+>               
+>               	SightConfig->DetectionByAffiliation.bDetectEnemies = true;
+>               	SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
+>               	SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
+>               
+>               	GetPerceptionComponent()->SetDominantSense(*SightConfig->GetSenseImplementation());
+>               	GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &AAI_Controller::OnTargetDetected);
+>               	GetPerceptionComponent()->ConfigureSense(*SightConfig);
+>               }
+>             }
+>         </code>
+>       </pre>
+>     - 다음으로 OnTargetDetected함수를 사용하여 Character가 타겟을 인식했는지에 대한 여부를 블랙보드의 Bool값으로 받을 수 있도록 구현했습니다.
+>     - <pre>
+>         <code>
+>             void AAI_Controller::OnTargetDetected(AActor *Actor, FAIStimulus const Stimulus)
+>             {
+>             	if (auto *const ch = Cast<APlayerCharacter>(Actor))
+>             	{
+>             		GetBlackboardComponent()->SetValueAsBool("IsSearch", Stimulus.WasSuccessfullySensed());
+>             	}
+>             }
+>         </code>
+>       </pre>
+>   - BTTask_FindRandomLocation
+>     - UNavigationSystmeV1클래스의 GetCurrent함수를 사용하여 현재 월드에 배치되어있는 네비매시바운드 볼륨에 대한 정보를 변수에 저장하였고, GetRandomPointInNavigableRadius함수를 사용하여 자기 자신의 위치를 기준으로 특정한 범위를 랜덤하게 탐색하도록 했습니다. 그 다음 랜덤으로 찾은 지역으로의 방향 값을 블랙보드의 Vector타입으로 받을 수 있도록 구현했습니다.
+>     - <pre>
+>         <code>
+>             EBTNodeResult::Type UBTTask_FindRandomLocation::ExecuteTask(UBehaviorTreeComponent &OwnerComp, uint8 *NodeMemory)
+>             {
+>             	if (AAI_Controller *const Controll = Cast<AAI_Controller>(OwnerComp.GetAIOwner()))
+>             	{
+>             		if (auto *const NPC = Controll->GetPawn())
+>             		{
+>             			FVector const Origin = NPC->GetActorLocation();
+>             			if (auto* const NavSys = UNavigationSystemV1::GetCurrent(GetWorld()))
+>             			{
+>             				FNavLocation Loc;
+>             				if (NavSys->GetRandomPointInNavigableRadius(Origin, SearchRadius, Loc))
+>             				{
+>             					OwnerComp.GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), Loc.Location);
+>             				}
+>             				FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+>             				return EBTNodeResult::Succeeded;
+>             			}
+>             		}
+>             	}
+>             	return EBTNodeResult::Failed;
+>             	
+>             }
+>         </code>
+>       </pre>
+>   - BTTask_FindPlayerLocation
+>     - bool 타입의SearchRandom이라는 변수를 선언해주었고, 해당 변수가 참일 경우 GetRandomPointInNavigableRadius함수를 사용하여 타겟의 주변 위치를 탐색하도록 그렇지 않다면 타겟의 위치로의 방향을 블랙보드의 Vector 타입으로 얻어올 수 있게 구현했습니다.
+>     - <pre>
+>         <code>
+>             EBTNodeResult::Type UBTTask_FindPlayerLocation::ExecuteTask(UBehaviorTreeComponent &OwnerComp, uint8 *NodeMemory)
+>             {
+>             	if (auto *const Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))
+>             	{
+>             		auto const PlayerLocation = Player->GetActorLocation();
+>             		if (SearchRandom)
+>             		{
+>             			FNavLocation Loc;
+>             
+>             			if (auto *const NavSys = UNavigationSystemV1::GetCurrent(GetWorld()))
+>             			{
+>             				if (NavSys->GetRandomPointInNavigableRadius(PlayerLocation, SearchRadius, Loc))
+>             				{
+>             					OwnerComp.GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), Loc.Location);
+>             					FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+>             					return EBTNodeResult::Succeeded;
+>             				}
+>             			}
+>             		}
+>             		else
+>             		{
+>             			OwnerComp.GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), PlayerLocation);
+>             			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+>             			return EBTNodeResult::Succeeded;
+>             		}
+>             	}
+>             	return EBTNodeResult::Failed;
+>             }
+>         </code>
+>       </pre>
+>   - BTTask_MeleeAttack
+>     - 블랙보드의 bool타입의 변수 값에 의해서 OutOfRange라는 변수의 값이 true가 아닐 경우 공격 애니메이션을 실행하게 구현했습니다.
+>     - 공격 실행 몽타주의 경우 UnrealInterface를 이용하였으며, 접두어 Execute_와 접미사 _Implementation 활용하여 IEnemyCombatInterface를 상속받아 EnemyCharacter 클래스에서 재정의한 MeleeAttack 함수를 실행시켰습니다.
+>     - <pre>
+>         <code>
+>             EBTNodeResult::Type UBTTask_MeleeAttack::ExecuteTask(UBehaviorTreeComponent &OwnerComp, uint8 *NodeMemory)
+>             {
+>                 auto const OutOfRange = !OwnerComp.GetBlackboardComponent()->GetValueAsBool(GetSelectedBlackboardKey());
+>                 if (OutOfRange)
+>                 {
+>                     FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+>                     return EBTNodeResult::Succeeded;
+>                 }
+>             
+>                 auto const *const Controller = OwnerComp.GetAIOwner();
+>                 auto *const NPC = Cast<AEnemyCharacter>(Controller->GetPawn());
+>             
+>                 if (auto *const iCombat = Cast<IEnemyCombatInterface>(NPC))
+>                 {
+>                     if (MontageHasFinished(NPC))
+>                     {
+>                         iCombat->Execute_MeleeAttack(NPC);
+>                     }
+>                 }
+>                 
+>                 FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+>                 return EBTNodeResult::Succeeded;
+>             }
+>             
+>             bool UBTTask_MeleeAttack::MontageHasFinished(AEnemyCharacter *const NPC)
+>             {
+>                 return NPC->GetMesh()->GetAnimInstance()->Montage_GetIsStopped(NPC->GetAttackMontage());
+>             }
+> 
+>         </code>
+>       </pre>
+
 
 > ### Level Object
 >   - PickUpItem
