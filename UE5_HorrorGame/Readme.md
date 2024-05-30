@@ -317,6 +317,39 @@ Horror's Game
 > 
 >         </code>
 >       </pre>
+>   - BTService_ChangeSpeed
+>     - OnBecomRelevant라는 함수에 EnemyCharacter클래스에 있는 CharacterMovementComponent를 불러왔고, 블루프린트에서 MaxWalkSpeed를 조절할 수 있도록 구현하였습니다.
+>     - <pre>
+>         <code>
+>             void UBTService_ChangeSpeed::OnBecomeRelevant(UBehaviorTreeComponent &OwnerComp, uint8 *NodeMemory)
+>             {
+>             	Super::OnBecomeRelevant(OwnerComp, NodeMemory);
+>             
+>             	if (auto const Controller = Cast<AAI_Controller>(OwnerComp.GetAIOwner()))
+>             	{
+>             		if (auto *const NPC = Cast<AEnemyCharacter>(Controller->GetPawn()))
+>             		{
+>             			NPC->GetCharacterMovement()->MaxWalkSpeed = Speed;
+>             		}
+>             	}
+>             }
+>         </code>
+>       </pre>
+>   - BTTask_IsPlayerInMeleeRange
+>     - GetDistanceTo함수를 사용해서 자기 자신과 타겟의 거리를 구한 후 타겟과의 거리가 공격 거리와 같거나 작으면 블랙보드의 Bool 값을 세팅할 수 있게 구현했습니다.
+>     - <pre>
+>         <code>
+>             void UBTService_IsPlayerInMeleeRange::OnBecomeRelevant(UBehaviorTreeComponent &OwnerComp, uint8 *NodeMemory)
+>             {
+>             	auto const *const Controller = Cast<AAI_Controller>(OwnerComp.GetAIOwner());
+>             	auto const *const NPC = Cast<AEnemyCharacter>(Controller->GetPawn());
+>             
+>             	auto const *const Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+>             
+>             	OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), NPC->GetDistanceTo(Player) <= MeleeRange);
+>             }
+>         </code>
+>       </pre>
 
 
 > ### Level Object
@@ -418,10 +451,162 @@ Horror's Game
 >         </pre>
 
 > ### UMG
->   - 인벤토리
->     - 아이템 획득 시 아이템 항목 생성
->     - 아이템 항목 클릭 시 아이템 사용
-
->   - 체력바
->     - 원형 체력바 (머티리얼 & 블루프린트로 제작)
->   - Aim UI
+>   - InGameHUD
+>     - 화면에 표시해줄 체력바와 총알 개수를 표시해주는 기능을 구현했습니다.
+>     - 체력바는 머티리얼을 만들어 아래와 같이 블루프린트를 구현해주었고, 해당 머티리얼의 인스턴스를 UMG 이미지박스에 적용시켜 주었습니다. 그 후, 머티리얼에서 만든 변수 Percent값을 캐릭터의 체력과 연결하여주었습니다.
+>     - <MT_Circle_ProgressBar>
+>     - 이미지
+>     - <BP_InGameUI>
+>     - asdf
+>     - 총알 개수는 UTextBlock에 있는 SetText함수를 이용하여 정수를 표시하게끔 해주었으며, 해당 함수를 PlayerCharacter에서 불러와 총알의 값을 세팅해주었다.
+>      - <pre>
+>           <code>
+>             void UInGameHUD::SetAmmoCountText(int remain, int max) const
+>             {
+>             	FString string = FString::Printf(TEXT(" %d / %d"), remain, max);
+>             	AmmoCount->SetText(FText::FromString(string));
+>             }
+>           </code>
+>         </pre>
+>      - <pre>
+>           <code>
+>             << PlayerCharacter.h >>
+>             UPROPERTY(EditAnywhere, Category = "Widget")
+>             TSubclassOf<UInGameHUD> HUDWidgetClass;
+>             UPROPERTY(VisibleAnywhere, Category = "Widget")
+>             UInGameHUD *HUDWidget;
+> 
+>             << PlayerCharacter.cpp >>
+>             void APlayerCharacter::CreateHUD()
+>             {
+>             	if (HUDWidgetClass)
+>             	{
+>             		HUDWidget = Cast<UInGameHUD>(CreateWidget(GetWorld(), HUDWidgetClass));
+>             
+>             		if (HUDWidget)
+>             		{
+>             			HUDWidget->AddToViewport();
+>             			HUDWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
+>             
+>             			int AmmoRemainCount = EquipWeapon ? EquipWeapon->GetCurAmmo() : 0;
+>             			int AmmoMaxCount = EquipWeapon ? EquipWeapon->GetMaxAmmo() : 0;
+>             
+>             			HUDWidget->Init(AmmoRemainCount, AmmoMaxCount);
+>             		}
+>             	}
+>             }
+>           </code>
+>         </pre>
+>   - Inventory
+>     - 플레이어의 인터렉션에 따라 PlaerCharacter의 배열 정보를 Inventory의 배열정보로 옮겨 각 인덱스마다 InventorySlot으로 정보를 표시해주었습니다.
+>      - <pre>
+>           <code>
+>             void UInventory::AddItemToInventory()
+>             {
+>             	if (Player)
+>             	{
+>             		InventoryItems = Player->GetInventoryItem();
+>             		BindingCoinText();
+>             		for (int i = 0; i < InventoryItems.Num(); i++)
+>             		{
+>             			if (InventoryClass)
+>             			{
+>             				SlotWidget = Cast<UInventorySlot>(CreateWidget(GetWorld(), InventoryClass));
+>             				if (SlotWidget)
+>             				{
+>             					SlotWidget->SetItemSlot(InventoryItems[i]);
+>             					WrapBox->AddChild(SlotWidget);
+>             				}
+>             			}
+>             		}
+>             	}
+>             }
+>           </code>
+>         </pre>
+>     - 플레이어가 인터렉션한 아이템의 타입이 Coin이라면 InventorySlot을 생성하지 않고 문자열로 개수만을 표시해주도록 구현했습니다.
+>      - <pre>
+>           <code>
+>             void UInventory::BindingCoinText()
+>             {
+>             	FString CoinString = FString::Printf(TEXT("%d"), Player->GetPlayerCoin());
+>             	CoinText->SetText(FText::FromString(CoinString));
+>             }
+>           </code>
+>         </pre>
+>   - InventorySlot
+>     - PickUpItem에 있는 아이템 정보를 받아와 PickUpItem의 이미지와 텍스트로 표시해주도록 구현했다.
+>     - Inventory에서 AddChild함수를 통해 생성된 InventorySlot을 클릭하면 해당 아이템의 타입에 따라 아이템을 사용할 수 있다.
+>      - <pre>
+>           <code>
+>             void UInventorySlot::SetItemSlot(FItemData *ItemSlot)
+>             {
+>             	ItemData = ItemSlot;
+>             }
+>           </code>
+>         </pre>
+>      - <pre>
+>           <code>
+>             float UInventorySlot::UseHealthPotion()
+>             {
+>             	auto Health = MyPlayer->GetCurHealth() + 20.0f;
+>             	if (Health > 100.0f)
+>             	{
+>             		Health = 100.0f;
+>             	}
+>             	return MyPlayer->SetCurHealth(Health);
+>             }
+>           </code>
+>         </pre>
+>   - GameResult
+>     - PlayerCharacter의 CurrentHP가 0과 같거나 작아지거나 EnemeyCharacter의 CurrentHP가 0과 같거나 작아지면 각 조건에 따라 다른 텍스트를 바인딩 하도록 구현했습니다.
+>     - 해당 UI가 화면에 표시될 때 화면에 마우스를 띄워주고 InputMode를 UI전용으로 바꾸어 주었으며, 게임이 일시정지되도록 구현했습니다.
+>      - <pre>
+>           <code>
+>             void UGameResult::NativeConstruct()
+>             {
+>             	FString WinString = FString::Printf(TEXT("You Win"));
+>             	FString LoseString = FString::Printf(TEXT("You Lose"));
+>             
+>             	auto *const Player = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+>             
+>             	HUD = Cast<AHorrorsHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
+>             
+>             	if (Player->GetCurHealth() <= 0)
+>             	{
+>             		ResultText->SetText(FText::FromString(LoseString));
+>             	}
+>             	else
+>             	{
+>             		ResultText->SetText(FText::FromString(WinString));
+>             	}
+>             }
+>           </code>
+>         </pre>
+>      - <pre>
+>           <code>
+>             void AHorrorsHUD::ShowResult()
+>             {
+>             	if (GameResultWidget)
+>             	{
+>             		bIsShowingResult = true;
+>             		GameResultWidget->AddToViewport();
+>             		GameResultWidget->SetVisibility(ESlateVisibility::Visible);
+>             		FInputModeUIOnly UIInputMode;
+>             		GetOwningPlayerController()->SetInputMode(UIInputMode);
+>             		GetOwningPlayerController()->SetShowMouseCursor(true);
+>             		GetOwningPlayerController()->Pause();
+>             	}
+>             }
+>             
+>             void AHorrorsHUD::HideResult()
+>             {
+>             	if (GameResultWidget)
+>             	{
+>             		bIsShowingResult = false;
+>             		GameResultWidget->SetVisibility(ESlateVisibility::Collapsed);
+>             		FInputModeGameOnly GameInput;
+>             		GetOwningPlayerController()->SetInputMode(GameInput);
+>             	}
+>             }
+>           </code>
+>         </pre>
