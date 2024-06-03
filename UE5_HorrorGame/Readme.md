@@ -4,6 +4,7 @@ Horror's Game
 
 플레이 영상
 -
+https://github.com/tbvjchvkfl/Personal_Project/assets/137769043/f6b6c91a-f6d2-4659-9956-b415d3347c62
 
 제작 기간 & 사용 기술
 -
