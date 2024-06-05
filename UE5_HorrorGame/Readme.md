@@ -459,7 +459,7 @@ https://github.com/tbvjchvkfl/Personal_Project/assets/137769043/f6b6c91a-f6d2-46
 >     - ![스크린샷 2024-06-05 213648](https://github.com/tbvjchvkfl/Personal_Project/assets/137769043/be2aff82-6940-4982-a449-755fd7e1b340)
 >     - #### <BP_InGameUI>
 >     - ![스크린샷 2024-06-05 213745](https://github.com/tbvjchvkfl/Personal_Project/assets/137769043/54da01f9-7e79-4f33-aa9a-49024c234338)
->     - 총알 개수는 UTextBlock에 있는 SetText함수를 이용하여 정수를 표시하게끔 해주었으며, 해당 함수를 PlayerCharacter에서 불러와 총알의 값을 세팅해주었다.
+>     - 총알 개수는 UTextBlock에 있는 SetText함수를 이용하여 정수를 표시하게끔 해주었으며, 해당 함수를 PlayerCharacter에서 불러와 총알의 값을 세팅해주었습니니다.
 >      - <pre>
 >           <code>
 >             void UInGameHUD::SetAmmoCountText(int remain, int max) const
@@ -535,8 +535,8 @@ https://github.com/tbvjchvkfl/Personal_Project/assets/137769043/f6b6c91a-f6d2-46
 >           </code>
 >         </pre>
 >   - InventorySlot
->     - PickUpItem에 있는 아이템 정보를 받아와 PickUpItem의 이미지와 텍스트로 표시해주도록 구현했다.
->     - Inventory에서 AddChild함수를 통해 생성된 InventorySlot을 클릭하면 해당 아이템의 타입에 따라 아이템을 사용할 수 있다.
+>     - PickUpItem에 있는 아이템 정보를 받아와 PickUpItem의 이미지와 텍스트로 표시해주도록 구현했습니다.
+>     - Inventory에서 AddChild함수를 통해 생성된 InventorySlot을 클릭하면 해당 아이템의 타입에 따라 아이템을 사용할 수 있습니다.
 >      - <pre>
 >           <code>
 >             void UInventorySlot::SetItemSlot(FItemData *ItemSlot)
@@ -617,4 +617,5 @@ https://github.com/tbvjchvkfl/Personal_Project/assets/137769043/f6b6c91a-f6d2-46
 -
 
 > - Player가 원거리 공격을 할 때 Projectile방식이 아니라 LineTrace방식으로 구현해보고자 LineTraceSingleByChannel을 사용하여 사격하는 것 까지는 구현을 하였으나, 바닥을 제외한 다른 Actor들과는 Collision이 발생하지 않아 다른 Actor와 상호작용을 할 수 없었습니다.</br>처음엔 Unreal Document에 FResult에 대한 부분을 살펴보기도 하고 FResult->GetActor() 함수를 응용하여 해결해보려하였으나, 마찬가지로 EnemyCharacter와는 Collision이 발생하지 않았습니다. 결국 구글링을 통해 Collision 세팅에 대해서 알게 되었고, EnemyCharacter에 있는 CapsuleCollision의 Trace를 Block으로 바꾸어 Collision이 발생하지 않았던 문제를 해결했습니다.
+
 > - Inventory를 구현할 때 Player에 있는 Item을 담을 배열의 정보를 InventoryUI에 있는 배열로 복사하고, InventoryUI의 ShowInventory함수가 실행될 때마다 AddChild가 실행되어 획득한 정보를 표시해주는 방식으로 구현했었는데, 이 때, Player의 배열 정보를 매번 받아오게되어 획득한 아이템이 계속 중복되어 표시되는 이슈가 있었습니다.</br> 처음엔 처음 시작부터 너무 잘못 생각했나하는 생각에 처음부터 다시 코딩을 해보려하였으나, 간단하게 해결할 수 있는 문제들은 간단하게 해결하자는 생각이 들어 Unreal Engine TArray의 Remove함수를 이용하여 Player에 있는 배열은 Item정보 획득 -> InventoryUI에 있는 배열로 정보 복사 -> 배열 정보 삭제 순으로 동작하게끔 수정하여 문제를 해결했습니다.
