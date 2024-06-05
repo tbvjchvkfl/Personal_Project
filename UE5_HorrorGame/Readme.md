@@ -455,10 +455,10 @@ https://github.com/tbvjchvkfl/Personal_Project/assets/137769043/f6b6c91a-f6d2-46
 >   - InGameHUD
 >     - 화면에 표시해줄 체력바와 총알 개수를 표시해주는 기능을 구현했습니다.
 >     - 체력바는 머티리얼을 만들어 아래와 같이 블루프린트를 구현해주었고, 해당 머티리얼의 인스턴스를 UMG 이미지박스에 적용시켜 주었습니다. 그 후, 머티리얼에서 만든 변수 Percent값을 캐릭터의 체력과 연결하여주었습니다.
->     - <MT_Circle_ProgressBar>
->     - 이미지
->     - <BP_InGameUI>
->     - asdf
+>     - #### <MT_Circle_ProgressBar>
+>     - ![스크린샷 2024-06-05 213648](https://github.com/tbvjchvkfl/Personal_Project/assets/137769043/be2aff82-6940-4982-a449-755fd7e1b340)
+>     - #### <BP_InGameUI>
+>     - ![스크린샷 2024-06-05 213745](https://github.com/tbvjchvkfl/Personal_Project/assets/137769043/54da01f9-7e79-4f33-aa9a-49024c234338)
 >     - 총알 개수는 UTextBlock에 있는 SetText함수를 이용하여 정수를 표시하게끔 해주었으며, 해당 함수를 PlayerCharacter에서 불러와 총알의 값을 세팅해주었다.
 >      - <pre>
 >           <code>
