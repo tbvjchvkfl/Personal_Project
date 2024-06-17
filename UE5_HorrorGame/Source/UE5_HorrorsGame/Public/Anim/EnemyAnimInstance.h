@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
-#include "PlayerAnimInstance.generated.h"
+#include "EnemyAnimInstance.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UE5_HORRORSGAME_API UPlayerAnimInstance : public UAnimInstance
+class UE5_HORRORSGAME_API UEnemyAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
 public:
@@ -26,31 +26,12 @@ public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds)override;
 
-
-	UFUNCTION()
-	void StartReloading();
-
-	UFUNCTION(BlueprintCallable, Category = "Reloading")
-	void EndReloading();
-
-	UFUNCTION()
-	void StartAimming();
-	
 private:
 	// ===========================================================
 	// =                  Variable / Property					 =
 	// ===========================================================
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	float MovementSpeed;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	float Direction;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	bool bIsAimming;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	bool bIsReload;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UPawnMovementComponent *PlayablePawnMovement;
@@ -62,5 +43,5 @@ private:
 	class APawn *PlayerPawn;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	class APlayerCharacter *PlayerCharacter;
+	class AEnemyCharacter *EnemyCharacter;
 };
