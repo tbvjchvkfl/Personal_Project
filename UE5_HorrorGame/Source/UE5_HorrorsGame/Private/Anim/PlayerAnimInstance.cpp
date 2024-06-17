@@ -8,31 +8,23 @@ void UPlayerAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
 
-	if (PlayerPawn == nullptr)
-	{
-		PlayerPawn = TryGetPawnOwner();
-	}
-	if (PlayerPawn)
-	{
-		PlayerCharacter = Cast<APlayerCharacter>(PlayerPawn);
-	}
+	PlayerCharacter = Cast<APlayerCharacter>(TryGetPawnOwner());
 }
 
 void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
 
-
-	if (PlayerPawn == nullptr)
+	if (PlayerCharacter == nullptr)
 	{
-		PlayerPawn = TryGetPawnOwner();
+		PlayerCharacter = Cast<APlayerCharacter>(TryGetPawnOwner());
 	}
-	if (PlayerPawn)
+	if (PlayerCharacter)
 	{
-		MovementSpeed = PlayerPawn->GetVelocity().Length();
-		PlayerCharacter = Cast<APlayerCharacter>(PlayerPawn);
+		MovementSpeed = PlayerCharacter->GetVelocity().Length();
 		bIsAimming = PlayerCharacter->bAimming;
 		bIsReload = PlayerCharacter->bReloading;
+		Direction = CalculateDirection(PlayerCharacter->GetVelocity(), PlayerCharacter->GetActorRotation());
 	}
 }
 
