@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Character/BaseCharacter.h"
+#include "Interface/InteractionInterface.h"
 #include "PlayerCharacter.generated.h"
 
 
@@ -12,8 +13,25 @@ class USpringArmComponent;
 class UCameraComponent;
 class AWeapon_Pistol;
 class UInGameHUD;
-class IInteractionInterface;
+struct FItemData;
 
+USTRUCT()
+struct FInteractionData
+{
+	GENERATED_USTRUCT_BODY()
+
+	FInteractionData() : CurrentInteractable(nullptr)
+	{
+	};
+	UPROPERTY()
+	AActor *CurrentInteractable;
+
+	UPROPERTY()
+	UPrimitiveComponent *CurrentComp;
+
+	UPROPERTY()
+	float LastInteractionCheckTimer;
+};
 
 UCLASS()
 class UE5_HORRORSGAME_API APlayerCharacter : public ABaseCharacter
@@ -32,22 +50,32 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent *FollowCamera;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Component")
+	class USphereComponent *CollisionSphere;
+
 	UPROPERTY(EditAnywhere, Category = "Weapon")
-	TSubclassOf<AWeapon_Pistol> Weapon;
+	TSubclassOf<AWeapon_Pistol> PistolWeapon;
 
-	AWeapon_Pistol *EquipWeapon;
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	TSubclassOf<class AWeapon_ShotGun> ShotGunWeapon;
 
-	UPROPERTY(EditAnywhere, Category = "Widget")
+	AWeapon_Pistol *Pistol;
+
+	AWeapon_ShotGun *ShotGun;
+
+	/*UPROPERTY(EditAnywhere, Category = "Widget")
 	TSubclassOf<UInGameHUD> HUDWidgetClass;
 	UPROPERTY(VisibleAnywhere, Category = "Widget")
-	UInGameHUD *HUDWidget;
+	UInGameHUD *HUDWidget;*/
 
 	FVector2D CameraInput;
 	float ZoomFactor;
 	bool bRunning;
 	bool bAimming;
 	bool bReloading;
+	bool bEnableInteraction;
 
+	int KillCount;
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
@@ -58,21 +86,24 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent *PlayerInputComponent) override;
 
 	void AttachWeapon(TSubclassOf<AWeapon_Pistol> WeaponClass);
+	//void AttachShotGun(TSubclassOf<AWeapon_ShotGun> WeaponShotGunClass);
 	void StartReload();
 	void EndReload();
 	
-	void CreateHUD();
+	//void CreateHUD();
 	void BindingAmmoChangedDelegate() const;
 	void ShowInventory();
 
-
+	//TArray<AWeaponBase> GetSubInventory() { return SubInventory; }
 
 	void AddItem(FItemData *Item);
 
 	TArray<FItemData*> GetInventoryItem();
 	int32 GetPlayerCoin();
 
-	int FindStack(FItemData* Item);
+	bool IsInteracting() const { return GetWorldTimerManager().IsTimerActive(TimerHandle_Interaction); };
+
+	virtual void Die(float KillingDamage, struct FDamageEvent const &DamageEvent, AController *Killer, AActor *DamageCauser)override;
 
 protected:
 	// ===========================================================
@@ -82,8 +113,28 @@ protected:
 	class AHorrorsHUD *HUD;
 	class UInventory *Inventory;
 
+	UPROPERTY(VisibleAnywhere, Category = "Interaction")
+	TScriptInterface<IInteractionInterface> InteractableInterface;
+	
+	FTimerHandle TimerHandle_Interaction;
+	FInteractionData InteractData;
+
 	TArray<FItemData*> PlayerItem;
 	int32 PlayerCoin;
+
+	class UAIPerceptionStimuliSourceComponent *StimulusSource;
+
+	UPROPERTY(EditAnywhere, Category = "Interface")
+	TSubclassOf<class APickUpItem> actor;
+	
+	TWeakObjectPtr<APickUpItem> pickitem;
+
+	APickUpItem *PickItem;
+
+	float InteractionCheckFrequency;
+	float InteractionCheckDistance;
+	/*UPROPERTY(EditAnywhere, Category = "Inventory")
+	TArray<class AWeaponBase*> SubInventory;*/
 
 	// ===========================================================
 	// =					  Functionary	   				     = 
@@ -97,9 +148,29 @@ protected:
 	void EndRunning();
 	void StartShoot();
 	void EndShoot();
-	void StartInteract();
-	void EndInteract();
 	void Interaction();
+	void StartInteraction();
+	void EndInteraction();
+	void FoundInteractable(AActor *NewInteractable);
+	void NotFoundInteractable();
+	void Interact();
 	void DoSubAction();
 	
+	void SetupStimulusSource();
+
+	UFUNCTION()
+	void OnOverlapBegin(UPrimitiveComponent *const OverlapComp, AActor *const OtherActor, UPrimitiveComponent *const OtherComponent, int const OtherBodyIndex, bool const FromSweep, FHitResult const &SweepResult);
+	UFUNCTION()
+	void OnOverlapEnd(UPrimitiveComponent *const OverlapComp, AActor *const OtherActor, UPrimitiveComponent *const OtherComponent, int const OtherBodyIndex);
+
+private:
+	// ===========================================================
+	// =                  Variable / Property					 =
+	// ===========================================================
+	
+
+
+	// ===========================================================
+	// =					  Functionary	   				     = 
+	// ===========================================================
 };
