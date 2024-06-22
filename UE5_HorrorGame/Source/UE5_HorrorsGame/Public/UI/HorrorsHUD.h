@@ -8,6 +8,8 @@
 
 class UInGameHUD;
 class UInventory;
+class UGameResult;
+class UInteractionWidget;
 
 UCLASS()
 class UE5_HORRORSGAME_API AHorrorsHUD : public AHUD
@@ -15,15 +17,26 @@ class UE5_HORRORSGAME_API AHorrorsHUD : public AHUD
 	GENERATED_BODY()
 	
 public:
-
+	// ===========================================================
+	// =                  Variable / Property					 =
+	// ===========================================================
 	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
 	TSubclassOf<UInGameHUD> InGameHUD;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
 	TSubclassOf<UInventory> Inventory;
 
-	bool bIsMenuVisible;
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
+	TSubclassOf<UGameResult> Result;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
+	TSubclassOf<UInteractionWidget> InteractionUI;
+
+	bool bIsMenuVisible;
+	bool bIsShowingResult;
+	// ===========================================================
+	// =					  Functionary	   				     = 
+	// ===========================================================
 	AHorrorsHUD();
 
 	void DisplayMenu();
@@ -31,13 +44,36 @@ public:
 
 	void ToggleMenu();
 
+	void AddInventoryItem();
+
+	void ShowResult();
+
+	void HideResult();
+
+	void ShowInteract();
+
+	void HideInteract();
+
+	UInGameHUD* GetInGameHUDWIdget() { return InGameHUDWidget; }
+
 protected:
+	// ===========================================================
+	// =                  Variable / Property					 =
+	// ===========================================================
 	UPROPERTY()
 	UInGameHUD *InGameHUDWidget;
 
 	UPROPERTY()
 	UInventory *InventoryWidget;
 
+	UPROPERTY()
+	UGameResult *GameResultWidget;
+
+	UPROPERTY()
+	UInteractionWidget *InteractionWidget;
+	// ===========================================================
+	// =					  Functionary	   				     = 
+	// ===========================================================
 	virtual void BeginPlay()override;
 
 };
