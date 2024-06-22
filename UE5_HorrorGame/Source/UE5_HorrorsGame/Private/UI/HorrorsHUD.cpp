@@ -2,7 +2,10 @@
 
 
 #include "UI/HorrorsHUD.h"
+#include "UI/InGameHUD.h"
 #include "UI/Inventory.h"
+#include "UI/GameResult.h"
+#include "UI/InteractionWidget.h"
 
 AHorrorsHUD::AHorrorsHUD()
 {
@@ -53,13 +56,73 @@ void AHorrorsHUD::AddInventoryItem()
 	}
 }
 
+void AHorrorsHUD::ShowResult()
+{
+	if (GameResultWidget)
+	{
+		bIsShowingResult = true;
+		GameResultWidget->AddToViewport();
+		GameResultWidget->SetVisibility(ESlateVisibility::Visible);
+		FInputModeUIOnly UIInputMode;
+		GetOwningPlayerController()->SetInputMode(UIInputMode);
+		GetOwningPlayerController()->SetShowMouseCursor(true);
+		GetOwningPlayerController()->Pause();
+	}
+}
+
+void AHorrorsHUD::HideResult()
+{
+	if (GameResultWidget)
+	{
+		bIsShowingResult = false;
+		GameResultWidget->SetVisibility(ESlateVisibility::Collapsed);
+		FInputModeGameOnly GameInput;
+		GetOwningPlayerController()->SetInputMode(GameInput);
+	}
+}
+
+void AHorrorsHUD::ShowInteract()
+{
+	if (InteractionWidget)
+	{
+		InventoryWidget->SetVisibility(ESlateVisibility::Visible);
+	}
+}
+
+void AHorrorsHUD::HideInteract()
+{
+	if (InteractionWidget)
+	{
+		InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
+	}
+}
+
 void AHorrorsHUD::BeginPlay()
 {
 	Super::BeginPlay();
+	if (InGameHUD)
+	{
+		InGameHUDWidget = CreateWidget<UInGameHUD>(GetWorld(), InGameHUD);
+		InGameHUDWidget->AddToViewport();
+		InGameHUDWidget->SetVisibility(ESlateVisibility::Visible);
+	}
 	if (Inventory)
 	{
 		InventoryWidget = CreateWidget<UInventory>(GetWorld(), Inventory);
 		InventoryWidget->AddToViewport();
+		InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
+	}
+
+	if (Result)
+	{
+		GameResultWidget = CreateWidget<UGameResult>(GetWorld(), Result);
+		GameResultWidget->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	
+	if (InteractionUI)
+	{
+		InteractionWidget = CreateWidget<UInteractionWidget>(GetWorld(), InteractionUI);
+		InteractionWidget->AddToViewport();
 		InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }
