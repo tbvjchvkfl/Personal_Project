@@ -2,43 +2,34 @@
 
 
 #include "Object/Item/ItemBase.h"
-#include "Character/Player/PlayerCharacter.h"
 
 UItemBase::UItemBase()
 {
+
 }
 
-UItemBase *UItemBase::CreateItemCopy() const
+UItemBase *UItemBase::CreateItemCopy()const
 {
-    UItemBase *ItemCopy = NewObject<UItemBase>(StaticClass());
+	auto ItemCopy = NewObject<UItemBase>(StaticClass());
+	ItemCopy->ID = this->ID;
+	ItemCopy->Amount = this->Amount;
+	ItemCopy->ItemType = this->ItemType;
+	ItemCopy->TextData = this->TextData;
+	ItemCopy->NumericData = this->NumericData;
+	ItemCopy->AssetData = this->AssetData;
 
-    ItemCopy->ID = this->ID;
-    ItemCopy->Quantity = this->Quantity;
-    ItemCopy->ItemQuality = this->ItemQuality;
-    ItemCopy->ItemType = this->ItemType;
-    ItemCopy->TextData = this->TextData;
-    ItemCopy->NumericData = this->NumericData;
-    ItemCopy->ItemStatistics = this->ItemStatistics;
-    ItemCopy->AssetData = this->AssetData;
-
-    return ItemCopy;
+	return ItemCopy;
 }
 
-void UItemBase::SetQuantity(const int32 NewQuantity)
+void UItemBase::SetAmount(const int32 NewAmount)
 {
-    if (NewQuantity != Quantity)
-    {
-        Quantity = FMath::Clamp(NewQuantity, 0, NumericData.bIsStackable ? NumericData.maxStackSize : 1);
-
-        /*if (OwningInventory)
-        {
-            if(Quantity <= 0)
-            {
-                OwningInventory->RemoveItem(this);
-        }*/
-    }
+	if (NewAmount != Amount)
+	{
+		Amount = FMath::Clamp(NewAmount, 0, NumericData.bIsStackable ? NumericData.MaxStackSize : 1);
+	}
 }
 
 void UItemBase::Use(APlayerCharacter *Character)
 {
+
 }
