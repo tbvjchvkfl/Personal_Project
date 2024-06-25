@@ -14,21 +14,21 @@
 
 void UInventorySlot::NativeConstruct()
 {
-	Super::NativeConstruct();
+	/*Super::NativeConstruct();
 	ItemNameText->SetText(FText::FromString(ItemData->TextData.Name));
 	ItemImage->SetBrushFromTexture(ItemData->AssetData.Icon);
 	UseButton->OnClicked.AddDynamic(this, &UInventorySlot::UseItem);
-	MyPlayer = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	MyPlayer = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));*/
 }
 
 void UInventorySlot::SetItemSlot(FItemData *ItemSlot)
 {
-	ItemData = ItemSlot;
+	/*ItemData = ItemSlot;*/
 }
 
 void UInventorySlot::UseItem()
 {
-	switch (ItemData->ItemType)
+	/*switch (ItemData->ItemType)
 	{
 		case EItemType::Consumable:
 			UseHealthPotion();
@@ -37,18 +37,18 @@ void UInventorySlot::UseItem()
 
 		default:
 			break;
-	}
+	}*/
 }
 
-float UInventorySlot::UseHealthPotion()
-{
-	auto Health = MyPlayer->GetCurHealth() + 20.0f;
-	if (Health > 100.0f)
-	{
-		Health = 100.0f;
-	}
-	//ItemData->Amount -= 1;
-	return MyPlayer->SetCurHealth(Health);
-}
+//float UInventorySlot::UseHealthPotion()
+//{
+//	auto Health = MyPlayer->GetCurHealth() + 20.0f;
+//	if (Health > 100.0f)
+//	{
+//		Health = 100.0f;
+//	}
+//	//ItemData->Amount -= 1;
+//	return MyPlayer->SetCurHealth(Health);
+//}
 
 
