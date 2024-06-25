@@ -17,10 +17,7 @@ UCLASS()
 class UE5_HORRORSGAME_API UInventorySlot : public UUserWidget
 {
 	GENERATED_BODY()
-
-
 public:
-
 	// ===========================================================
 	// =                  Variable / Property					 =
 	// ===========================================================
@@ -60,6 +57,6 @@ protected:
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
-	float UseHealthPotion();
+	//float UseHealthPotion();
 	virtual void NativeConstruct()override;
 };

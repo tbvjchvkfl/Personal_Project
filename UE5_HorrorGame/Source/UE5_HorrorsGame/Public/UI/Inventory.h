@@ -8,10 +8,10 @@
 
 class UWrapBox;
 class UTextBlock;
-class APlayerCharacter;
-class APickUpItem;
+//class APlayerCharacter;
+//class APickUpItem;
 class UInventorySlot;
-struct FItemData;
+class UInventoryComponent;
 
 UCLASS()
 class UE5_HORRORSGAME_API UInventory : public UUserWidget
@@ -19,34 +19,52 @@ class UE5_HORRORSGAME_API UInventory : public UUserWidget
 	GENERATED_BODY()
 	
 public:
+	// ===========================================================
+	// =                  Variable / Property					 =
+	// ===========================================================
 	UPROPERTY(meta = (BindWidget))
 	UWrapBox *WrapBox;
 
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock *CoinText;
+	/*UPROPERTY(EditAnywhere, Category = "ItemSlot")
+	TSubclassOf<UUserWidget> InventoryClass;*/
 
-	FItemData *ItemReference;
+	UPROPERTY()
+	UInventoryComponent *InventoryComp;
 
-	UPROPERTY(EditAnywhere, Category = "ItemSlot")
-	TSubclassOf<UUserWidget> InventoryClass;
-
-	UInventorySlot *SlotWidget;
-
-	TArray<FItemData*> InventoryItems;
-
+	UPROPERTY()
 	APlayerCharacter *Player;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UInventorySlot> InventorySlotClass;
+	
+	//FItemData *ItemReference;
 
-	APickUpItem *Items;
+	//TArray<FItemData*> InventoryItems;
 
-	bool JustSetCoinData;
+	//APickUpItem *Items;
 
+	// ===========================================================
+	// =					  Functionary	   				     = 
+	// ===========================================================
 	virtual void NativeConstruct()override;
 
-	void AddItemToInventory();
+	UFUNCTION(Category = "Add to Item")
+	void RefreshInventory();
 
-	void BindingCoinText();
-
-	UFUNCTION(BlueprintCallable)
-	void RemoveItem();
+	//UFUNCTION(BlueprintCallable)
+	//void RemoveItem();
 	
+protected:
+	// ===========================================================
+	// =                  Variable / Property					 =
+	// ===========================================================
+
+
+
+	// ===========================================================
+	// =					  Functionary	   				     = 
+	// ===========================================================
+
+	virtual void NativeOnInitialized() override;
+	virtual bool NativeOnDrop(const FGeometry &InGeometry, const FDragDropEvent &InDragDropEvent, UDragDropOperation *InOperation) override;
 };
