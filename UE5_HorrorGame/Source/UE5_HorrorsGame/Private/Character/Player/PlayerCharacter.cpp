@@ -8,16 +8,14 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Armor/Weapon_Pistol.h"
-#include "UI/InGameHUD.h"
-#include "UI/InteractionWidget.h"
-#include "Object/Item/PickUpItem.h"
 #include "UI/HorrorsHUD.h"
-#include "UI/Inventory.h"
+#include "UI/InGameHUD.h"
+#include "Component/InventoryComponent.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
 #include "Kismet/GameplayStatics.h"
 
-APlayerCharacter::APlayerCharacter() : KillCount(0)
+APlayerCharacter::APlayerCharacter() : KillCount(0), InteractionCheckDistance(200.0f)
 {
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>("CameraBoom");
 	CameraBoom->SetupAttachment(RootComponent);
@@ -34,18 +32,14 @@ APlayerCharacter::APlayerCharacter() : KillCount(0)
 	CollisionSphere->SetupAttachment(RootComponent);
 	CollisionSphere->InitSphereRadius(200.0f);
 
+	PlayerInventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryInfo"));
+
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->MaxWalkSpeed = 200.0f;
-	
+	SetupStimulusSource();
+
 	MaxHealth = 100.0f;
 	CurHealth = MaxHealth;
-
-	bEnableInteraction = false;
-
-	InteractionCheckFrequency = 0.1f;
-	InteractionCheckDistance = 200.0f;
-
-	SetupStimulusSource();
 }
 
 void APlayerCharacter::Tick(float DeltaTime)
@@ -65,17 +59,8 @@ void APlayerCharacter::Tick(float DeltaTime)
 		FollowCamera->FieldOfView = FMath::Lerp<float>(90.0f, 60.0f, ZoomFactor);
 		CameraBoom->TargetArmLength = FMath::Lerp<float>(200.0f, 100.0f, ZoomFactor);
 	}
-	//{
-	//	HUDWidget->SetCoinText(this);
-	//}
 	{
-		if (GetWorld()->TimeSince(InteractData.LastInteractionCheckTimer) > InteractionCheckFrequency)
-		{
-			Interaction();
-		}
-	}
-	{
-		HUD->GetInGameHUDWIdget()->SetAmmoCountText(Pistol->GetCurAmmo(), Pistol->GetMaxAmmo());
+		HUD->GetInGameHUDWidget()->SetAmmoCountText(Pistol->GetCurAmmo(), Pistol->GetMaxAmmo());
 	}
 }
 
@@ -96,9 +81,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCom
 
 	PlayerInputComponent->BindAction("Reload", IE_Released, this, &APlayerCharacter::StartReload);
 
-	//PlayerInputComponent->BindAction("Interaction", IE_Released, this, &APlayerCharacter::Interaction);
-	PlayerInputComponent->BindAction("Interaction", IE_Pressed, this, &APlayerCharacter::StartInteraction);
-	PlayerInputComponent->BindAction("Interaction", IE_Released, this, &APlayerCharacter::EndInteraction);
+	PlayerInputComponent->BindAction("Interaction", IE_Released, this, &APlayerCharacter::Interaction);
+	//PlayerInputComponent->BindAction("Interaction", IE_Pressed, this, &APlayerCharacter::StartInteraction);
+	//PlayerInputComponent->BindAction("Interaction", IE_Released, this, &APlayerCharacter::EndInteraction);
 
 	PlayerInputComponent->BindAction("Inventory", IE_Released, this, &APlayerCharacter::ShowInventory);
 
@@ -116,13 +101,10 @@ void APlayerCharacter::BeginPlay()
 	HUD = Cast<AHorrorsHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
 	AttachWeapon(PistolWeapon);
 
-	HUD->GetInGameHUDWIdget()->InitializeHUD();
+	HUD->GetInGameHUDWidget()->InitializeHUD();
 	
 	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnOverlapBegin);
 	CollisionSphere->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnOverlapEnd);
-	
-	Inventory = Cast<UInventory>(GetWorld());
-	bEnableInteraction = false;
 }
 
 void APlayerCharacter::MoveForward(float Value)
@@ -185,115 +167,24 @@ void APlayerCharacter::EndShoot()
 
 void APlayerCharacter::Interaction()
 {
-	InteractData.LastInteractionCheckTimer = GetWorld()->GetTimeSeconds();
 	FVector TraceStart{ GetPawnViewLocation() + FVector(5.0f, 8.0f, 10.0f)};
 	FVector TraceEnd{ TraceStart + (GetViewRotation().Vector() * InteractionCheckDistance) };
 	
-	DrawDebugLine(GetWorld(), TraceStart, TraceEnd, FColor::Green, false, 1.0f);
-
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(this);
+	
 	FHitResult TraceHit;
+
 	if (GetWorld()->LineTraceSingleByChannel(TraceHit, TraceStart, TraceEnd, ECC_Visibility, QueryParams))
 	{
 		if (TraceHit.bBlockingHit)
 		{
 			if (auto item = Cast<APickUpItem>(TraceHit.GetActor()))
 			{
-				GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Red, FString::Printf(TEXT("asdf")), true);
+				InteractableInterface = TraceHit.GetActor();
+				InteractableInterface->Interaction(this);
 			}
 		}
-		if (TraceHit.GetActor()->GetClass()->ImplementsInterface(UInteractionInterface::StaticClass()))
-		{
-			const float Distance = (TraceStart - TraceHit.ImpactPoint).Size();
-			if (TraceHit.GetActor() != InteractData.CurrentInteractable && Distance <= InteractionCheckDistance)
-			{
-				FoundInteractable(TraceHit.GetActor());
-				return;
-			}
-			if (TraceHit.GetActor() == InteractData.CurrentInteractable)
-			{
-				return;
-			}
-		}
-	}
-	NotFoundInteractable();
-}
-
-void APlayerCharacter::StartInteraction()
-{
-	Interaction();
-
-	if (InteractData.CurrentInteractable)
-	{
-		if (IsValid(InteractableInterface.GetObject()))
-		{
-			InteractableInterface->BeginInteraction();
-
-			if (FMath::IsNearlyZero(InteractableInterface->InteractableData.InteractionDuration, 0.1f))
-			{
-				Interact();
-			}
-			else
-			{
-				GetWorldTimerManager().SetTimer(TimerHandle_Interaction, this, &APlayerCharacter::Interact, InteractableInterface->InteractableData.InteractionDuration, false);
-			}
-		}
-	}
-	bEnableInteraction = true;
-}
-
-void APlayerCharacter::EndInteraction()
-{
-	GetWorldTimerManager().ClearTimer(TimerHandle_Interaction);
-	
-	if (IsValid(InteractableInterface.GetObject()))
-	{
-		InteractableInterface->EndInteraction();
-	}
-}
-
-void APlayerCharacter::FoundInteractable(AActor *NewInteractable)
-{
-	if (IsInteracting())
-	{
-		EndInteraction();
-	}
-	if (InteractData.CurrentInteractable)
-	{
-		InteractableInterface = InteractData.CurrentInteractable;
-		InteractableInterface->EndFocus();
-	}
-	InteractData.CurrentInteractable = NewInteractable;
-	InteractableInterface = NewInteractable;
-
-	InteractableInterface->BeginFocus();
-}
-
-void APlayerCharacter::NotFoundInteractable()
-{
-	if (IsInteracting())
-	{
-		GetWorldTimerManager().ClearTimer(TimerHandle_Interaction);
-	}
-	if (InteractData.CurrentInteractable)
-	{
-		if (IsValid(InteractableInterface.GetObject()))
-		{
-			InteractableInterface->EndFocus();
-		}
-		InteractData.CurrentInteractable = nullptr;
-		InteractableInterface = nullptr;
-	}
-}
-
-void APlayerCharacter::Interact()
-{
-	GetWorldTimerManager().ClearTimer(TimerHandle_Interaction);
-
-	if (IsValid(InteractableInterface.GetObject()))
-	{
-		InteractableInterface->Interaction(this);
 	}
 }
 
@@ -320,7 +211,7 @@ void APlayerCharacter::OnOverlapBegin(UPrimitiveComponent *const OverlapComp, AA
 	}
 	if (auto item = Cast<APickUpItem>(OtherActor))
 	{
-		bEnableInteraction = true;
+		HUD->GetInGameHUDWidget()->ShowInteractUI();
 	}
 }
 
@@ -332,7 +223,7 @@ void APlayerCharacter::OnOverlapEnd(UPrimitiveComponent *const OverlapComp, AAct
 	}
 	if (auto item = Cast<APickUpItem>(OtherActor))
 	{
-		bEnableInteraction = false;
+		HUD->GetInGameHUDWidget()->HideInteractUI();
 	}
 }
 
@@ -359,30 +250,6 @@ void APlayerCharacter::EndReload()
 void APlayerCharacter::ShowInventory()
 {
 	HUD->ToggleMenu();
-}
-
-void APlayerCharacter::AddItem(FItemData* Item)
-{
-	/*if (Item && Item->ItemType == EItemType::Coin)
-	{
-		PlayerCoin += Item->Amount;
-	}
-	else
-	{
-		PlayerItem.Add(Item);
-		HUD->AddInventoryItem();
-		PlayerItem.Pop();
-	}*/
-}
-
-TArray<FItemData*> APlayerCharacter::GetInventoryItem()
-{
-	return PlayerItem;
-}
-
-int32 APlayerCharacter::GetPlayerCoin()
-{
-	return PlayerCoin;
 }
 
 void APlayerCharacter::Die(float KillingDamage, FDamageEvent const &DamageEvent, AController *Killer, AActor *DamageCauser)
