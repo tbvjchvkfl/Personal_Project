@@ -9,9 +9,13 @@
 
 class USpringArmComponent;
 class UCameraComponent;
-class AWeapon_Pistol;
 class UInGameHUD;
 class UInventoryComponent;
+class USphereComponent;
+class UItemBase;
+class AWeapon_Pistol;
+class AWeapon_ShotGun;
+class AWeaponBase;
 
 UCLASS()
 class UE5_HORRORSGAME_API APlayerCharacter : public ABaseCharacter
@@ -30,12 +34,16 @@ public:
 	UCameraComponent *FollowCamera;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Component")
-	class USphereComponent *CollisionSphere;
+	USphereComponent *CollisionSphere;
 
 	UPROPERTY(EditAnywhere, Category = "Weapon")
-	TSubclassOf<AWeapon_Pistol> PistolWeapon;
+	TSubclassOf<AWeaponBase> EquipWeapon;
 
 	AWeapon_Pistol *Pistol;
+
+	AWeapon_ShotGun *ShotGun;
+
+	UItemBase *ItemBase;
 
 	FVector2D CameraInput;
 	float ZoomFactor;
@@ -48,13 +56,12 @@ public:
 	// =					  Functionary	   				     = 
 	// ===========================================================
 	APlayerCharacter();
-
-	void AttachWeapon(TSubclassOf<AWeapon_Pistol> WeaponClass);
 	void StartReload();
 	void EndReload();
 	void ShowInventory();
 
 	FORCEINLINE UInventoryComponent *GetInventory()const { return PlayerInventory; }
+	FORCEINLINE TArray<TSubclassOf<AWeaponBase>> GetEquipInventory() const { return EquipInventory; }
 
 	virtual void Die(float KillingDamage, struct FDamageEvent const &DamageEvent, AController *Killer, AActor *DamageCauser)override;
 
@@ -75,12 +82,17 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Inventory")
 	UInventoryComponent *PlayerInventory;
 
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	TArray<TSubclassOf<AWeaponBase>> EquipInventory;
+
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime)override;
 	virtual void SetupPlayerInputComponent(class UInputComponent *PlayerInputComponent) override;
+
+	void AttachWeapon(TSubclassOf<AWeaponBase> Weapon);
 
 	void MoveForward(float Value);
 	void MoveRight(float Value);
@@ -91,6 +103,7 @@ protected:
 	void StartShoot();
 	void EndShoot();
 	void Interaction();
+	void WeaponInteraction();
 	void DoSubAction();
 	
 	void SetupStimulusSource();
