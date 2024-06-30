@@ -8,9 +8,11 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Armor/Weapon_Pistol.h"
+#include "Armor/Weapon_ShotGun.h"
 #include "UI/HorrorsHUD.h"
 #include "UI/InGameHUD.h"
 #include "Component/InventoryComponent.h"
+#include "Object/Item/PickUpItem.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
 #include "Kismet/GameplayStatics.h"
@@ -99,7 +101,7 @@ void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	HUD = Cast<AHorrorsHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
-	AttachWeapon(PistolWeapon);
+	AttachWeapon(EquipWeapon);
 
 	HUD->GetInGameHUDWidget()->InitializeHUD();
 	
@@ -257,12 +259,19 @@ void APlayerCharacter::Die(float KillingDamage, FDamageEvent const &DamageEvent,
 	HUD->ShowResult();
 }
 
-void APlayerCharacter::AttachWeapon(TSubclassOf<AWeapon_Pistol> WeaponClass)
+void APlayerCharacter::WeaponInteraction()
 {
-	if (WeaponClass)
+	for (int i = 0; EquipInventory.Num(); i++)
 	{
-		Pistol = GetWorld()->SpawnActor<AWeapon_Pistol>(WeaponClass);
 
+	}
+}
+
+void APlayerCharacter::AttachWeapon(TSubclassOf<AWeaponBase> Weapon)
+{
+	if (Weapon)
+	{
+		Pistol = GetWorld()->SpawnActor<AWeapon_Pistol>(Weapon);
 		const USkeletalMeshSocket *WeaponSocket = GetMesh()->GetSocketByName("HandGun");
 
 		if (Pistol && WeaponSocket)
@@ -270,4 +279,16 @@ void APlayerCharacter::AttachWeapon(TSubclassOf<AWeapon_Pistol> WeaponClass)
 			WeaponSocket->AttachActor(Pistol, GetMesh());
 		}
 	}
+
+	//if (Weapon)
+	//{
+	//	ShotGun = GetWorld()->SpawnActor<AWeapon_ShotGun>(Weapon);
+
+	//	const USkeletalMeshSocket *WeaponSocket = GetMesh()->GetSocketByName("HandGun");
+
+	//	if (ShotGun && WeaponSocket)
+	//	{
+	//		WeaponSocket->AttachActor(ShotGun, GetMesh());
+	//	}
+	//}
 }
