@@ -37,7 +37,10 @@ public:
 	USphereComponent *CollisionSphere;
 
 	UPROPERTY(EditAnywhere, Category = "Weapon")
-	TSubclassOf<AWeaponBase> EquipWeapon;
+	TSubclassOf<AWeapon_Pistol> PistolWeapon;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	TSubclassOf<AWeapon_ShotGun> ShotGunWeapon;
 
 	AWeapon_Pistol *Pistol;
 
@@ -61,7 +64,6 @@ public:
 	void ShowInventory();
 
 	FORCEINLINE UInventoryComponent *GetInventory()const { return PlayerInventory; }
-	FORCEINLINE TArray<TSubclassOf<AWeaponBase>> GetEquipInventory() const { return EquipInventory; }
 
 	virtual void Die(float KillingDamage, struct FDamageEvent const &DamageEvent, AController *Killer, AActor *DamageCauser)override;
 
@@ -82,9 +84,20 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Inventory")
 	UInventoryComponent *PlayerInventory;
 
-	UPROPERTY(EditAnywhere, Category = "Inventory")
-	TArray<TSubclassOf<AWeaponBase>> EquipInventory;
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	TArray<AWeaponBase*> WeaponInventory;
 
+	UPROPERTY()
+	TArray<TSubclassOf<AWeaponBase>> WeaponTypes;
+
+	UPROPERTY()
+	AWeaponBase *CurrentWeapon;
+
+	AWeaponBase *LastWeapon;
+
+	bool bIsPistol;
+
+	bool bIsSwitchingWeapon;
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
@@ -92,7 +105,16 @@ protected:
 	virtual void Tick(float DeltaTime)override;
 	virtual void SetupPlayerInputComponent(class UInputComponent *PlayerInputComponent) override;
 
-	void AttachWeapon(TSubclassOf<AWeaponBase> Weapon);
+	void SwitchingGun(int WeaponIndex);
+	int32 AddWeapon(TSubclassOf<AWeaponBase> WeaponType);
+	void UpdateCurrentWeaponVisibility();
+
+	void AttachPistol();
+	void AttachShotGun();
+
+	void AttachWeapon();
+	void WeaponChangePistol();
+	void WeaponChangeShotGun();
 
 	void MoveForward(float Value);
 	void MoveRight(float Value);
@@ -103,7 +125,7 @@ protected:
 	void StartShoot();
 	void EndShoot();
 	void Interaction();
-	void WeaponInteraction();
+	
 	void DoSubAction();
 	
 	void SetupStimulusSource();
