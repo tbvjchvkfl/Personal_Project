@@ -7,6 +7,7 @@
 #include "Components/SphereComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
+#include "Armor/WeaponBase.h"
 #include "Armor/Weapon_Pistol.h"
 #include "Armor/Weapon_ShotGun.h"
 #include "UI/HorrorsHUD.h"
@@ -62,7 +63,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 		CameraBoom->TargetArmLength = FMath::Lerp<float>(200.0f, 100.0f, ZoomFactor);
 	}
 	{
-		HUD->GetInGameHUDWidget()->SetAmmoCountText(Pistol->GetCurAmmo(), Pistol->GetMaxAmmo());
+		//HUD->GetInGameHUDWidget()->SetAmmoCountText(Pistol->GetCurAmmo(), Pistol->GetMaxAmmo());
 	}
 }
 
@@ -81,11 +82,12 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCom
 	PlayerInputComponent->BindAction("Shoot", IE_Pressed, this, &APlayerCharacter::StartShoot);
 	PlayerInputComponent->BindAction("Shoot", IE_Released, this, &APlayerCharacter::EndShoot);
 
+	PlayerInputComponent->BindAction("ChangePistol", IE_Released, this, &APlayerCharacter::WeaponChangePistol);
+	PlayerInputComponent->BindAction("ChangeShotGun", IE_Released, this, &APlayerCharacter::WeaponChangeShotGun);
+
 	PlayerInputComponent->BindAction("Reload", IE_Released, this, &APlayerCharacter::StartReload);
 
 	PlayerInputComponent->BindAction("Interaction", IE_Released, this, &APlayerCharacter::Interaction);
-	//PlayerInputComponent->BindAction("Interaction", IE_Pressed, this, &APlayerCharacter::StartInteraction);
-	//PlayerInputComponent->BindAction("Interaction", IE_Released, this, &APlayerCharacter::EndInteraction);
 
 	PlayerInputComponent->BindAction("Inventory", IE_Released, this, &APlayerCharacter::ShowInventory);
 
@@ -97,12 +99,57 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCom
 	PlayerInputComponent->BindAxis("TurnRight", this, &APlayerCharacter::AddControllerYawInput);
 }
 
+void APlayerCharacter::SwitchingGun(int WeaponIndex)
+{
+	if (WeaponInventory.Num() > WeaponIndex)
+	{
+		if (WeaponInventory[WeaponIndex] != CurrentWeapon)
+		{
+			CurrentWeapon = WeaponInventory[WeaponIndex];
+
+			bIsSwitchingWeapon = true;
+		}
+	}
+}
+
+int32 APlayerCharacter::AddWeapon(TSubclassOf<AWeaponBase> WeaponType)
+{
+	AWeaponBase *NewWeapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponType);
+	NewWeapon->SetOwner(this);
+	NewWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "HandGun");
+	NewWeapon->SetActorHiddenInGame(true);
+	WeaponInventory.Add(NewWeapon);
+
+	return WeaponInventory.Num() - 1;
+}
+
+void APlayerCharacter::UpdateCurrentWeaponVisibility()
+{
+	if (LastWeapon != nullptr)
+	{
+		LastWeapon->SetActorHiddenInGame(true);
+	}
+	if (CurrentWeapon != nullptr)
+	{
+		CurrentWeapon->SetActorHiddenInGame(false);
+	}
+}
+
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	HUD = Cast<AHorrorsHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
-	AttachWeapon(EquipWeapon);
+	for (auto WeaponType : WeaponTypes)
+	{
+		AddWeapon(WeaponType);
+	}
 
+	SwitchingGun(0);
+	
+	//AttachWeapon();
+	//AttachPistol();
+	//AttachShotGun();
+	bIsPistol = true;
 	HUD->GetInGameHUDWidget()->InitializeHUD();
 	
 	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnOverlapBegin);
@@ -158,13 +205,27 @@ void APlayerCharacter::StartShoot()
 {
 	if (bAimming && !bReloading)
 	{
-		Pistol->StartShoot(this);
+		if (Pistol)
+		{
+			Pistol->StartShoot(this);
+		}
+		else
+		{
+			return;
+		}
 	}
 }
 
 void APlayerCharacter::EndShoot()
 {
-	Pistol->EndShoot();
+	if (Pistol)
+	{
+		Pistol->EndShoot();
+	}
+	else
+	{
+		return;
+	}
 }
 
 void APlayerCharacter::Interaction()
@@ -259,36 +320,68 @@ void APlayerCharacter::Die(float KillingDamage, FDamageEvent const &DamageEvent,
 	HUD->ShowResult();
 }
 
-void APlayerCharacter::WeaponInteraction()
+void APlayerCharacter::WeaponChangePistol()
 {
-	for (int i = 0; EquipInventory.Num(); i++)
+	if (bIsPistol)
 	{
-
+		Pistol = GetWorld()->SpawnActor<AWeapon_Pistol>(PistolWeapon);
+		Pistol->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "HandGun");
+		Pistol->SetOwner(this);
+		bIsPistol = false;
+		if (ShotGun)
+		{
+			ShotGun->Destroy();
+		}
 	}
 }
 
-void APlayerCharacter::AttachWeapon(TSubclassOf<AWeaponBase> Weapon)
+void APlayerCharacter::WeaponChangeShotGun()
 {
-	if (Weapon)
+	if (!bIsPistol)
 	{
-		Pistol = GetWorld()->SpawnActor<AWeapon_Pistol>(Weapon);
-		const USkeletalMeshSocket *WeaponSocket = GetMesh()->GetSocketByName("HandGun");
-
-		if (Pistol && WeaponSocket)
+		ShotGun = GetWorld()->SpawnActor<AWeapon_ShotGun>(ShotGunWeapon);
+		ShotGun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "HandGun");
+		ShotGun->SetOwner(this);
+		bIsPistol = true;
+		if (Pistol)
 		{
-			WeaponSocket->AttachActor(Pistol, GetMesh());
+			Pistol->Destroy();
 		}
 	}
+}
 
-	//if (Weapon)
-	//{
-	//	ShotGun = GetWorld()->SpawnActor<AWeapon_ShotGun>(Weapon);
+void APlayerCharacter::AttachWeapon()
+{
+	if (PistolWeapon)
+	{
+		Pistol = GetWorld()->SpawnActor<AWeapon_Pistol>(PistolWeapon);
+		const USkeletalMeshSocket *WeaponSocket = GetMesh()->GetSocketByName("HandGun");
+		WeaponSocket->AttachActor(Pistol, GetMesh());
+	}
+	if (ShotGunWeapon)
+	{
+		ShotGun = GetWorld()->SpawnActor<AWeapon_ShotGun>(ShotGunWeapon);
+		const USkeletalMeshSocket *WeaponSocket = GetMesh()->GetSocketByName("HandGun");
+		WeaponSocket->AttachActor(ShotGun, GetMesh());
+	}
+}
 
-	//	const USkeletalMeshSocket *WeaponSocket = GetMesh()->GetSocketByName("HandGun");
+void APlayerCharacter::AttachPistol()
+{
+	if (PistolWeapon)
+	{
+		Pistol = GetWorld()->SpawnActor<AWeapon_Pistol>(PistolWeapon);
+		Pistol->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "HandGun");
+		Pistol->SetOwner(this);
+	}
+}
 
-	//	if (ShotGun && WeaponSocket)
-	//	{
-	//		WeaponSocket->AttachActor(ShotGun, GetMesh());
-	//	}
-	//}
+void APlayerCharacter::AttachShotGun()
+{
+	if (ShotGunWeapon)
+	{
+		ShotGun = GetWorld()->SpawnActor<AWeapon_ShotGun>(ShotGunWeapon);
+		ShotGun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "HandGun");
+		ShotGun->SetOwner(this);
+	}
 }
