@@ -36,11 +36,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Component")
 	USphereComponent *CollisionSphere;
 
-	UPROPERTY(EditAnywhere, Category = "Weapon")
-	TSubclassOf<AWeapon_Pistol> PistolWeapon;
+	//UPROPERTY(EditAnywhere, Category = "Weapon")
+	//TSubclassOf<AWeapon_Pistol> PistolWeapon;
 
-	UPROPERTY(EditAnywhere, Category = "Weapon")
-	TSubclassOf<AWeapon_ShotGun> ShotGunWeapon;
+	//UPROPERTY(EditAnywhere, Category = "Weapon")
+	//TSubclassOf<AWeapon_ShotGun> ShotGunWeapon;
 
 	AWeapon_Pistol *Pistol;
 
@@ -85,14 +85,15 @@ protected:
 	UInventoryComponent *PlayerInventory;
 
 	UPROPERTY(EditAnywhere, Category = "Weapon")
-	TArray<AWeaponBase*> WeaponInventory;
-
-	UPROPERTY()
 	TArray<TSubclassOf<AWeaponBase>> WeaponTypes;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon")
+	TArray<AWeaponBase *> WeaponInventory;
 
 	UPROPERTY()
 	AWeaponBase *CurrentWeapon;
 
+	UPROPERTY()
 	AWeaponBase *LastWeapon;
 
 	bool bIsPistol;
@@ -106,13 +107,9 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent *PlayerInputComponent) override;
 
 	void SwitchingGun(int WeaponIndex);
-	int32 AddWeapon(TSubclassOf<AWeaponBase> WeaponType);
+	void AddWeapon(TSubclassOf<AWeaponBase> WeaponType);
 	void UpdateCurrentWeaponVisibility();
 
-	void AttachPistol();
-	void AttachShotGun();
-
-	void AttachWeapon();
 	void WeaponChangePistol();
 	void WeaponChangeShotGun();
 
