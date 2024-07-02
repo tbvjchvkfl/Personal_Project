@@ -63,7 +63,10 @@ void APlayerCharacter::Tick(float DeltaTime)
 		CameraBoom->TargetArmLength = FMath::Lerp<float>(200.0f, 100.0f, ZoomFactor);
 	}
 	{
-		//HUD->GetInGameHUDWidget()->SetAmmoCountText(Pistol->GetCurAmmo(), Pistol->GetMaxAmmo());
+		if (Pistol)
+		{
+			HUD->GetInGameHUDWidget()->SetAmmoCountText(Pistol->GetCurAmmo(), Pistol->GetMaxAmmo());
+		}
 	}
 }
 
@@ -99,41 +102,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCom
 	PlayerInputComponent->BindAxis("TurnRight", this, &APlayerCharacter::AddControllerYawInput);
 }
 
-void APlayerCharacter::SwitchingGun(int WeaponIndex)
-{
-	if (WeaponInventory.Num() > WeaponIndex)
-	{
-		if (WeaponInventory[WeaponIndex] != CurrentWeapon)
-		{
-			CurrentWeapon = WeaponInventory[WeaponIndex];
 
-			bIsSwitchingWeapon = true;
-		}
-	}
-}
-
-int32 APlayerCharacter::AddWeapon(TSubclassOf<AWeaponBase> WeaponType)
-{
-	AWeaponBase *NewWeapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponType);
-	NewWeapon->SetOwner(this);
-	NewWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "HandGun");
-	NewWeapon->SetActorHiddenInGame(true);
-	WeaponInventory.Add(NewWeapon);
-
-	return WeaponInventory.Num() - 1;
-}
-
-void APlayerCharacter::UpdateCurrentWeaponVisibility()
-{
-	if (LastWeapon != nullptr)
-	{
-		LastWeapon->SetActorHiddenInGame(true);
-	}
-	if (CurrentWeapon != nullptr)
-	{
-		CurrentWeapon->SetActorHiddenInGame(false);
-	}
-}
 
 void APlayerCharacter::BeginPlay()
 {
@@ -143,12 +112,7 @@ void APlayerCharacter::BeginPlay()
 	{
 		AddWeapon(WeaponType);
 	}
-
 	SwitchingGun(0);
-	
-	//AttachWeapon();
-	//AttachPistol();
-	//AttachShotGun();
 	bIsPistol = true;
 	HUD->GetInGameHUDWidget()->InitializeHUD();
 	
@@ -205,26 +169,18 @@ void APlayerCharacter::StartShoot()
 {
 	if (bAimming && !bReloading)
 	{
-		if (Pistol)
+		//if (Pistol)
+		//{
+		//	Pistol->StartShoot(this);
+		//}
+		if (CurrentWeapon)
 		{
-			Pistol->StartShoot(this);
+			CurrentWeapon->StartShoot(this);
 		}
 		else
 		{
 			return;
 		}
-	}
-}
-
-void APlayerCharacter::EndShoot()
-{
-	if (Pistol)
-	{
-		Pistol->EndShoot();
-	}
-	else
-	{
-		return;
 	}
 }
 
@@ -254,6 +210,7 @@ void APlayerCharacter::Interaction()
 void APlayerCharacter::DoSubAction()
 {
 	CurHealth -= 10.0f;
+	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Blue, FString::Printf(TEXT("%d"), WeaponInventory.Num()), true);
 }
 
 void APlayerCharacter::SetupStimulusSource()
@@ -292,6 +249,10 @@ void APlayerCharacter::OnOverlapEnd(UPrimitiveComponent *const OverlapComp, AAct
 
 void APlayerCharacter::StartReload()
 {
+	if (CurrentWeapon->GetCurAmmo() == CurrentWeapon->GetMaxAmmo())
+	{
+		return;
+	}
 	if (Pistol->GetCurAmmo() == Pistol->GetMaxAmmo())
 	{
 		return;
@@ -307,6 +268,10 @@ void APlayerCharacter::StartReload()
 void APlayerCharacter::EndReload()
 {
 	bReloading = false;
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->Reload();
+	}
 	Pistol->Reload();
 }
 
@@ -322,66 +287,64 @@ void APlayerCharacter::Die(float KillingDamage, FDamageEvent const &DamageEvent,
 
 void APlayerCharacter::WeaponChangePistol()
 {
-	if (bIsPistol)
-	{
-		Pistol = GetWorld()->SpawnActor<AWeapon_Pistol>(PistolWeapon);
-		Pistol->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "HandGun");
-		Pistol->SetOwner(this);
-		bIsPistol = false;
-		if (ShotGun)
-		{
-			ShotGun->Destroy();
-		}
-	}
+	SwitchingGun(0);
 }
 
 void APlayerCharacter::WeaponChangeShotGun()
 {
-	if (!bIsPistol)
+	SwitchingGun(1);
+}
+
+void APlayerCharacter::SwitchingGun(int WeaponIndex)
+{
+	if (WeaponInventory.Num() > WeaponIndex)
 	{
-		ShotGun = GetWorld()->SpawnActor<AWeapon_ShotGun>(ShotGunWeapon);
-		ShotGun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "HandGun");
-		ShotGun->SetOwner(this);
-		bIsPistol = true;
-		if (Pistol)
+		if (WeaponInventory[WeaponIndex] != CurrentWeapon)
 		{
-			Pistol->Destroy();
+			LastWeapon = CurrentWeapon;
+			CurrentWeapon = WeaponInventory[WeaponIndex];
+
+			bIsSwitchingWeapon = true;
+			UpdateCurrentWeaponVisibility();
+		}
+		if (WeaponInventory[WeaponIndex] == CurrentWeapon)
+		{
+			return;
 		}
 	}
 }
 
-void APlayerCharacter::AttachWeapon()
+void APlayerCharacter::AddWeapon(TSubclassOf<AWeaponBase> WeaponType)
 {
-	if (PistolWeapon)
+	AWeaponBase *NewWeapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponType);
+	NewWeapon->SetOwner(this);
+	NewWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "HandGun");
+	NewWeapon->SetActorHiddenInGame(true);
+	WeaponInventory.Add(NewWeapon);
+}
+
+void APlayerCharacter::UpdateCurrentWeaponVisibility()
+{
+	if (LastWeapon != nullptr)
 	{
-		Pistol = GetWorld()->SpawnActor<AWeapon_Pistol>(PistolWeapon);
-		const USkeletalMeshSocket *WeaponSocket = GetMesh()->GetSocketByName("HandGun");
-		WeaponSocket->AttachActor(Pistol, GetMesh());
+		LastWeapon->SetActorHiddenInGame(true);
 	}
-	if (ShotGunWeapon)
+	if (CurrentWeapon != nullptr)
 	{
-		ShotGun = GetWorld()->SpawnActor<AWeapon_ShotGun>(ShotGunWeapon);
-		const USkeletalMeshSocket *WeaponSocket = GetMesh()->GetSocketByName("HandGun");
-		WeaponSocket->AttachActor(ShotGun, GetMesh());
+		CurrentWeapon->SetActorHiddenInGame(false);
 	}
 }
 
-void APlayerCharacter::AttachPistol()
-{
-	if (PistolWeapon)
-	{
-		Pistol = GetWorld()->SpawnActor<AWeapon_Pistol>(PistolWeapon);
-		Pistol->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "HandGun");
-		Pistol->SetOwner(this);
-	}
-}
-
-void APlayerCharacter::AttachShotGun()
-{
-	if (ShotGunWeapon)
-	{
-		ShotGun = GetWorld()->SpawnActor<AWeapon_ShotGun>(ShotGunWeapon);
-		ShotGun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, "HandGun");
-		ShotGun->SetOwner(this);
-	}
-}
+//void APlayableCharacter::BindingAmmoChagedDelegate() const
+//{
+//	if (EquipWeapon)
+//	{
+//		EquipWeapon->AmmoChangedDelegate.AddLambda([&]()
+//			{
+//				if (HUDWidget)
+//				{
+//					HUDWidget->SetAmmoCountText(EquipWeapon->GetAmmoCount(), EquipWeapon->GetMaxAmmoCount());
+//				}
+//			});
+//	}
+//}
