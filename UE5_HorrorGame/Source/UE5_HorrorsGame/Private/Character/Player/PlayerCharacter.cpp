@@ -63,9 +63,9 @@ void APlayerCharacter::Tick(float DeltaTime)
 		CameraBoom->TargetArmLength = FMath::Lerp<float>(200.0f, 100.0f, ZoomFactor);
 	}
 	{
-		if (Pistol)
+		if (CurrentWeapon)
 		{
-			HUD->GetInGameHUDWidget()->SetAmmoCountText(Pistol->GetCurAmmo(), Pistol->GetMaxAmmo());
+			HUD->GetInGameHUDWidget()->SetAmmoCountText(CurrentWeapon->GetCurAmmo(), CurrentWeapon->GetMaxAmmo());
 		}
 	}
 }
@@ -83,7 +83,6 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCom
 	PlayerInputComponent->BindAction("Running", IE_Released, this, &APlayerCharacter::EndRunning);
 
 	PlayerInputComponent->BindAction("Shoot", IE_Pressed, this, &APlayerCharacter::StartShoot);
-	PlayerInputComponent->BindAction("Shoot", IE_Released, this, &APlayerCharacter::EndShoot);
 
 	PlayerInputComponent->BindAction("ChangePistol", IE_Released, this, &APlayerCharacter::WeaponChangePistol);
 	PlayerInputComponent->BindAction("ChangeShotGun", IE_Released, this, &APlayerCharacter::WeaponChangeShotGun);
@@ -113,7 +112,7 @@ void APlayerCharacter::BeginPlay()
 		AddWeapon(WeaponType);
 	}
 	SwitchingGun(0);
-	bIsPistol = true;
+	UpdateCurrentWeaponVisibility();
 	HUD->GetInGameHUDWidget()->InitializeHUD();
 	
 	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnOverlapBegin);
@@ -137,12 +136,24 @@ void APlayerCharacter::MoveRight(float Value)
 void APlayerCharacter::StartAimming()
 {
 	bAimming = true;
+	if (CurrentWeapon == WeaponInventory[0])
+	{
+		bPistolWeapon = true;
+		bShotGunWeapon = false;
+	}
+	if (CurrentWeapon == WeaponInventory[1])
+	{
+		bPistolWeapon = false;
+		bShotGunWeapon = true;
+	}
 	GetCharacterMovement()->MaxWalkSpeed = 150.0f;
 }
 
 void APlayerCharacter::EndAimming()
 {
 	bAimming = false;
+	bPistolWeapon = false;
+	bShotGunWeapon = false;
 	GetCharacterMovement()->MaxWalkSpeed = 200.0f;
 }
 
@@ -169,12 +180,16 @@ void APlayerCharacter::StartShoot()
 {
 	if (bAimming && !bReloading)
 	{
-		//if (Pistol)
-		//{
-		//	Pistol->StartShoot(this);
-		//}
 		if (CurrentWeapon)
 		{
+			if (CurrentWeapon == WeaponInventory[0])
+			{
+				PlayAnimMontage(ShootPistolAnim);
+			}
+			if (CurrentWeapon == WeaponInventory[1])
+			{
+				PlayAnimMontage(ShootShotGunAnim);
+			}
 			CurrentWeapon->StartShoot(this);
 		}
 		else
@@ -182,6 +197,49 @@ void APlayerCharacter::StartShoot()
 			return;
 		}
 	}
+}
+
+void APlayerCharacter::StartReload()
+{
+	if (CurrentWeapon->GetCurAmmo() == CurrentWeapon->GetMaxAmmo())
+	{
+		return;
+	}
+
+	if (CurrentWeapon == WeaponInventory[0])
+	{
+		bPistolReloading = true;
+		bShotGunReloading = false;
+	}
+	if(CurrentWeapon == WeaponInventory[1])
+	{
+		bPistolReloading = false;
+		bShotGunReloading = true;
+	}
+
+	bReloading = true;
+	if (bAimming)
+	{
+		bAimming = false;
+		bPistolWeapon = false;
+		bShotGunWeapon = false;
+	}
+}
+
+void APlayerCharacter::EndReload()
+{
+	bReloading = false;
+	bPistolReloading = false;
+	bShotGunReloading = false;
+	if (CurrentWeapon)
+	{
+		CurrentWeapon->Reload();
+	}
+}
+
+void APlayerCharacter::ShowInventory()
+{
+	HUD->ToggleMenu();
 }
 
 void APlayerCharacter::Interaction()
@@ -247,39 +305,6 @@ void APlayerCharacter::OnOverlapEnd(UPrimitiveComponent *const OverlapComp, AAct
 	}
 }
 
-void APlayerCharacter::StartReload()
-{
-	if (CurrentWeapon->GetCurAmmo() == CurrentWeapon->GetMaxAmmo())
-	{
-		return;
-	}
-	if (Pistol->GetCurAmmo() == Pistol->GetMaxAmmo())
-	{
-		return;
-	}
-
-	bReloading = true;
-	if (bAimming)
-	{
-		bAimming = false;
-	}
-}
-
-void APlayerCharacter::EndReload()
-{
-	bReloading = false;
-	if (CurrentWeapon)
-	{
-		CurrentWeapon->Reload();
-	}
-	Pistol->Reload();
-}
-
-void APlayerCharacter::ShowInventory()
-{
-	HUD->ToggleMenu();
-}
-
 void APlayerCharacter::Die(float KillingDamage, FDamageEvent const &DamageEvent, AController *Killer, AActor *DamageCauser)
 {
 	HUD->ShowResult();
@@ -288,11 +313,13 @@ void APlayerCharacter::Die(float KillingDamage, FDamageEvent const &DamageEvent,
 void APlayerCharacter::WeaponChangePistol()
 {
 	SwitchingGun(0);
+	PlayAnimMontage(GunChangeAnim);
 }
 
 void APlayerCharacter::WeaponChangeShotGun()
 {
 	SwitchingGun(1);
+	PlayAnimMontage(GunChangeAnim);
 }
 
 void APlayerCharacter::SwitchingGun(int WeaponIndex)
@@ -303,9 +330,6 @@ void APlayerCharacter::SwitchingGun(int WeaponIndex)
 		{
 			LastWeapon = CurrentWeapon;
 			CurrentWeapon = WeaponInventory[WeaponIndex];
-
-			bIsSwitchingWeapon = true;
-			UpdateCurrentWeaponVisibility();
 		}
 		if (WeaponInventory[WeaponIndex] == CurrentWeapon)
 		{
@@ -334,17 +358,3 @@ void APlayerCharacter::UpdateCurrentWeaponVisibility()
 		CurrentWeapon->SetActorHiddenInGame(false);
 	}
 }
-
-//void APlayableCharacter::BindingAmmoChagedDelegate() const
-//{
-//	if (EquipWeapon)
-//	{
-//		EquipWeapon->AmmoChangedDelegate.AddLambda([&]()
-//			{
-//				if (HUDWidget)
-//				{
-//					HUDWidget->SetAmmoCountText(EquipWeapon->GetAmmoCount(), EquipWeapon->GetMaxAmmoCount());
-//				}
-//			});
-//	}
-//}
