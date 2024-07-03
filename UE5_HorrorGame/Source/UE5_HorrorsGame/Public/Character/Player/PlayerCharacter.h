@@ -36,23 +36,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Component")
 	USphereComponent *CollisionSphere;
 
-	//UPROPERTY(EditAnywhere, Category = "Weapon")
-	//TSubclassOf<AWeapon_Pistol> PistolWeapon;
-
-	//UPROPERTY(EditAnywhere, Category = "Weapon")
-	//TSubclassOf<AWeapon_ShotGun> ShotGunWeapon;
-
-	AWeapon_Pistol *Pistol;
-
-	AWeapon_ShotGun *ShotGun;
-
 	UItemBase *ItemBase;
 
 	FVector2D CameraInput;
 	float ZoomFactor;
 	bool bRunning;
 	bool bAimming;
+	bool bPistolWeapon;
+	bool bShotGunWeapon;
 	bool bReloading;
+	bool bPistolReloading;
+	bool bShotGunReloading;
 
 	int KillCount;
 	// ===========================================================
@@ -64,6 +58,8 @@ public:
 	void ShowInventory();
 
 	FORCEINLINE UInventoryComponent *GetInventory()const { return PlayerInventory; }
+
+	AWeaponBase *GetCurrentWeapon()const { return CurrentWeapon; }
 
 	virtual void Die(float KillingDamage, struct FDamageEvent const &DamageEvent, AController *Killer, AActor *DamageCauser)override;
 
@@ -96,9 +92,14 @@ protected:
 	UPROPERTY()
 	AWeaponBase *LastWeapon;
 
-	bool bIsPistol;
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	UAnimMontage *ShootPistolAnim;
 
-	bool bIsSwitchingWeapon;
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	UAnimMontage *ShootShotGunAnim;
+
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	UAnimMontage *GunChangeAnim;
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
@@ -108,6 +109,8 @@ protected:
 
 	void SwitchingGun(int WeaponIndex);
 	void AddWeapon(TSubclassOf<AWeaponBase> WeaponType);
+
+	UFUNCTION(BlueprintCallable, Category = "WeaponChange")
 	void UpdateCurrentWeaponVisibility();
 
 	void WeaponChangePistol();
@@ -120,7 +123,6 @@ protected:
 	void StartRunning();
 	void EndRunning();
 	void StartShoot();
-	void EndShoot();
 	void Interaction();
 	
 	void DoSubAction();
