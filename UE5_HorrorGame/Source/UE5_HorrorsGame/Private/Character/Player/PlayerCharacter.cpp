@@ -5,6 +5,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/SphereComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Armor/WeaponBase.h"
@@ -14,6 +15,7 @@
 #include "UI/InGameHUD.h"
 #include "Component/InventoryComponent.h"
 #include "Object/Item/PickUpItem.h"
+#include "Object/InteractionDoor.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
 #include "Kismet/GameplayStatics.h"
@@ -34,6 +36,10 @@ APlayerCharacter::APlayerCharacter() : KillCount(0), InteractionCheckDistance(20
 	CollisionSphere = CreateDefaultSubobject<USphereComponent>("CollisionSphere");
 	CollisionSphere->SetupAttachment(RootComponent);
 	CollisionSphere->InitSphereRadius(200.0f);
+
+	ShotGunMesh = CreateDefaultSubobject<UStaticMeshComponent>("ShotGunMesh");
+	ShotGunMesh->SetupAttachment(GetMesh(), "SubWeaponSocket");
+	ShotGunMesh->SetVisibility(false);
 
 	PlayerInventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryInfo"));
 
@@ -261,6 +267,11 @@ void APlayerCharacter::Interaction()
 				InteractableInterface = TraceHit.GetActor();
 				InteractableInterface->Interaction(this);
 			}
+			if (auto Devie = Cast<AInteractionDoor>(TraceHit.GetActor()))
+			{
+				InteractableInterface = TraceHit.GetActor();
+				InteractableInterface->Interaction(this);
+			}
 		}
 	}
 }
@@ -268,7 +279,6 @@ void APlayerCharacter::Interaction()
 void APlayerCharacter::DoSubAction()
 {
 	CurHealth -= 10.0f;
-	GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Blue, FString::Printf(TEXT("%d"), WeaponInventory.Num()), true);
 }
 
 void APlayerCharacter::SetupStimulusSource()
@@ -356,5 +366,13 @@ void APlayerCharacter::UpdateCurrentWeaponVisibility()
 	if (CurrentWeapon != nullptr)
 	{
 		CurrentWeapon->SetActorHiddenInGame(false);
+	}
+	if (CurrentWeapon == WeaponInventory[1])
+	{
+		ShotGunMesh->SetVisibility(false);
+	}
+	else
+	{
+		ShotGunMesh->SetVisibility(true);
 	}
 }
