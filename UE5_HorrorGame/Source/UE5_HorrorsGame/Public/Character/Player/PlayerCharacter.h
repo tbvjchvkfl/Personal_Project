@@ -36,6 +36,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Component")
 	USphereComponent *CollisionSphere;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Component")
+	UStaticMeshComponent *PisotlMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Component")
+	UStaticMeshComponent *ShotGunMesh;
+
 	UItemBase *ItemBase;
 
 	FVector2D CameraInput;
