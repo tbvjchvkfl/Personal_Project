@@ -9,6 +9,8 @@
 #include "EnemyCharacter.generated.h"
 
 class UBehaviorTree;
+class HorrorsGameModeBase;
+class APlayerCharacter;
 
 UCLASS()
 class UE5_HORRORSGAME_API AEnemyCharacter : public ABaseCharacter, public IEnemyCombatInterface
@@ -19,8 +21,9 @@ public:
 	// =                  Variable / Property					 =
 	// ===========================================================
 	
-	
+	HorrorsGameModeBase *GameMode;
 
+	APlayerCharacter *Target;
 
 	// ===========================================================
 	// =					  Functionary	   				     = 
@@ -35,6 +38,10 @@ public:
 	int MeleeAttack_Implementation() override;
 
 	int ScreamAction_Implementation() override;
+
+	void AttackStart()const;
+	void AttackEnd()const;
+	void MeleeAttackWithSweepTrace();
 protected:
 	// ===========================================================
 	// =                  Variable / Property					 =
@@ -42,13 +49,19 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowAbstract = "true"))
 	UBehaviorTree *Tree;
 
+	class AHorrorsHUD *HUD;
 
-
+	UPROPERTY(EditAnywhere, Category = "Item")
+	TSubclassOf<class APickUpItem> DropItemClass;
 
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
 
+	virtual void BeginPlay()override;
+	virtual void Tick(float DeltaTime)override;
+	virtual void Die(float KillingDamage, struct FDamageEvent const &DamageEvent, AController *Killer, AActor *DamageCauser) override;
+	void DeathAnimationEnd();
 private:
 	// ===========================================================
 	// =                  Variable / Property					 =
@@ -60,9 +73,16 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation", meta = (AllowPrivateAccess = "true"))
 	UAnimMontage *ScreamMontage;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Collision", meta = (AllowPrivateAccess = "true"))
+	class UBoxComponent *HandCollisionBox;
+
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
 
+	UFUNCTION()
+	void OnAttackOverlapBegin(UPrimitiveComponent *const OverlapComp, AActor *const OtherActor, UPrimitiveComponent *const OtherComponent, int const OtherBodyIndex, bool const FromSweep, FHitResult const &SweepResult);
 
+	UFUNCTION()
+	void OnAttackOverlapEnd(UPrimitiveComponent *const OverlapComp, AActor *const OtherActor, UPrimitiveComponent *const OtherComponent, int const OtherBodyIndex);
 };
