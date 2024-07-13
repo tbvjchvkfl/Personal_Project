@@ -8,6 +8,10 @@
 
 class UTextBlock;
 class UInteractionWidget;
+class UInventoryComponent;
+class UWidgetAnimation;
+class UHorizontalBox;
+class UTutorialWidget;
 
 UCLASS()
 class UE5_HORRORSGAME_API UInGameHUD : public UUserWidget
@@ -25,7 +29,16 @@ public:
 	UTextBlock *CoinText;
 
 	UPROPERTY(meta = (BindWidget))
+	UHorizontalBox *CoinHorizon;
+
+	UPROPERTY(meta = (BindWidget))
 	UInteractionWidget *InteractUI;
+
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation *ShowCoinUI;
+
+	UPROPERTY(meta = (BindWidget))
+	UTutorialWidget *TutorialWidget;
 
 	// ===========================================================
 	// =					  Functionary	   				     = 
@@ -34,6 +47,9 @@ public:
 	void HideInteractUI()const;
 	void InitializeHUD() const;
 	void SetAmmoCountText(int remain, int max) const;
-	//void SetCoinText(class APlayerCharacter* Player);
+	void SetCoinText(UInventoryComponent* Inventory) const;
+	void PlayCoinAnimation();
+	void ShowTutorialWidget();
+	void HideTutorialWidget();
 };
 
