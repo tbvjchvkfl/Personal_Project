@@ -48,13 +48,13 @@ void AHorrorsHUD::ToggleMenu()
 	}
 }
 
-void AHorrorsHUD::AddInventoryItem()
-{
-	if (Inventory)
-	{
-		InventoryWidget->AddItemToInventory();
-	}
-}
+//void AHorrorsHUD::AddInventoryItem()
+//{
+//	if (Inventory)
+//	{
+//		//InventoryWidget->RefreshInventory();
+//	}
+//}
 
 void AHorrorsHUD::ShowResult()
 {
