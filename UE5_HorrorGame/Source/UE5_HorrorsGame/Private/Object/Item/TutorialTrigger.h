@@ -3,10 +3,26 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "GameFramework/Actor.h" 
+#include "Data/TutorialStruct.h"
+#include "Engine/DataTable.h"
 #include "TutorialTrigger.generated.h"
 
 class UBoxComponent;
+class UTutorialBase;
+class UTutorialWidget;
+
+//USTRUCT(BlueprintType)
+//struct FTutorialData : public FTableRowBase
+//{
+//	GENERATED_USTRUCT_BODY()
+//
+//	UPROPERTY(EditAnywhere)
+//	FString Title;
+//
+//	UPROPERTY(EditAnywhere)
+//	FString Description;
+//};
 
 UCLASS()
 class UE5_HORRORSGAME_API ATutorialTrigger : public AActor
@@ -14,7 +30,6 @@ class UE5_HORRORSGAME_API ATutorialTrigger : public AActor
 	GENERATED_BODY()
 	
 public:	
-
 	// ===========================================================
 	// =                  Variable / Property					 =
 	// ===========================================================
@@ -22,13 +37,13 @@ public:
 	UBoxComponent *CollisionBox;
 
 	UPROPERTY(EditAnywhere, Category = "TutoComp")
-	UDataTable *TutorialData;
+	UDataTable *TutorialDataTable;
 
 	UPROPERTY(EditAnywhere, Category = "TutoComp")
 	FName DesiredTutoName;
 
-	//UPROPERTY(VisibleAnywhere, Category = "TutoComp")
-	FTutorialData* TutorialReference;
+	UPROPERTY(VisibleAnywhere, Category = "TutoComp")
+	UTutorialBase *TutorialReference;
 
 	// ===========================================================
 	// =					  Functionary	   				     = 
@@ -39,7 +54,8 @@ protected:
 	// ===========================================================
 	// =                  Variable / Property					 =
 	// ===========================================================
-	
+
+	AHorrorsHUD *HUD;
 
 	// ===========================================================
 	// =					  Functionary	   				     = 
@@ -47,7 +63,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
-	void InitializeTutorial();
+	void InitializeTutorial(TSubclassOf<UTutorialBase> BaseClass);
 
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent *const OverlapComp, AActor *const OtherActor, UPrimitiveComponent *const OtherComponent, int const OtherBodyIndex, bool const FromSweep, FHitResult const &SweepResult);
