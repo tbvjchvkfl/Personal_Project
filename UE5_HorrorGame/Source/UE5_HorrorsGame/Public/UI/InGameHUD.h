@@ -49,7 +49,7 @@ public:
 	void SetAmmoCountText(int remain, int max) const;
 	void SetCoinText(UInventoryComponent* Inventory) const;
 	void PlayCoinAnimation();
-	void ShowTutorialWidget();
+	void ShowTutorialWidget(FString Text);
 	void HideTutorialWidget();
 };
 
