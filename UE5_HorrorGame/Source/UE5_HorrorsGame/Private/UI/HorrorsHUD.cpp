@@ -6,6 +6,7 @@
 #include "UI/Inventory.h"
 #include "UI/GameResult.h"
 #include "UI/InteractionWidget.h"
+#include "UI/TutorialWidget.h"
 
 AHorrorsHUD::AHorrorsHUD()
 {
@@ -48,14 +49,6 @@ void AHorrorsHUD::ToggleMenu()
 	}
 }
 
-//void AHorrorsHUD::AddInventoryItem()
-//{
-//	if (Inventory)
-//	{
-//		//InventoryWidget->RefreshInventory();
-//	}
-//}
-
 void AHorrorsHUD::ShowResult()
 {
 	if (GameResultWidget)
@@ -81,22 +74,6 @@ void AHorrorsHUD::HideResult()
 	}
 }
 
-void AHorrorsHUD::ShowInteract()
-{
-	if (InteractionWidget)
-	{
-		InventoryWidget->SetVisibility(ESlateVisibility::Visible);
-	}
-}
-
-void AHorrorsHUD::HideInteract()
-{
-	if (InteractionWidget)
-	{
-		InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
-	}
-}
-
 void AHorrorsHUD::BeginPlay()
 {
 	Super::BeginPlay();
@@ -118,11 +95,11 @@ void AHorrorsHUD::BeginPlay()
 		GameResultWidget = CreateWidget<UGameResult>(GetWorld(), Result);
 		GameResultWidget->SetVisibility(ESlateVisibility::Collapsed);
 	}
-	
-	if (InteractionUI)
+
+	if (TutorialUI)
 	{
-		InteractionWidget = CreateWidget<UInteractionWidget>(GetWorld(), InteractionUI);
-		InteractionWidget->AddToViewport();
-		InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
+		TutorialWidget = CreateWidget<UTutorialWidget>(GetWorld(), TutorialUI);
+		TutorialWidget->AddToViewport();
+		TutorialWidget->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }

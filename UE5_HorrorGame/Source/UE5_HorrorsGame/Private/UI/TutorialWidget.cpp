@@ -4,7 +4,7 @@
 #include "UI/TutorialWidget.h"
 #include "Components/TextBlock.h"
 
-void UTutorialWidget::NativeConstruct()
+void UTutorialWidget::SetTutorialText(FString TutoText)
 {
-	//TutorialText->SetText(TutorialBase.Description);
+	TutorialText->SetText(FText::FromString(TutoText));
 }
