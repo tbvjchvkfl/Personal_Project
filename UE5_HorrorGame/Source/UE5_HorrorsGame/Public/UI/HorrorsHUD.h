@@ -10,6 +10,7 @@ class UInGameHUD;
 class UInventory;
 class UGameResult;
 class UInteractionWidget;
+class UTutorialWidget;
 
 UCLASS()
 class UE5_HORRORSGAME_API AHorrorsHUD : public AHUD
@@ -30,7 +31,7 @@ public:
 	TSubclassOf<UGameResult> Result;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
-	TSubclassOf<UInteractionWidget> InteractionUI;
+	TSubclassOf<UTutorialWidget> TutorialUI;
 
 	bool bIsMenuVisible;
 	bool bIsShowingResult;
@@ -44,17 +45,11 @@ public:
 
 	void ToggleMenu();
 
-	void AddInventoryItem();
-
 	void ShowResult();
 
 	void HideResult();
 
-	void ShowInteract();
-
-	void HideInteract();
-
-	UInGameHUD* GetInGameHUDWIdget() { return InGameHUDWidget; }
+	UInGameHUD* GetInGameHUDWidget() { return InGameHUDWidget; }
 
 protected:
 	// ===========================================================
@@ -70,7 +65,7 @@ protected:
 	UGameResult *GameResultWidget;
 
 	UPROPERTY()
-	UInteractionWidget *InteractionWidget;
+	UTutorialWidget *TutorialWidget;
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================

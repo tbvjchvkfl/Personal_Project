@@ -26,6 +26,5 @@ public:
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
-	virtual void NativeConstruct() override;
-	void SetTutorialText();
+	void SetTutorialText(FString TutoText);
 };
