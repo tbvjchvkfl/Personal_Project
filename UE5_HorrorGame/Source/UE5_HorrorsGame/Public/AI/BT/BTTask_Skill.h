@@ -4,21 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/Tasks/BTTask_BlackboardBase.h"
-#include "BTTask_MeleeAttack.generated.h"
+#include "BTTask_Skill.generated.h"
 
-/**
- * 
- */
+class ABossEnemyCharacter;
+
 UCLASS()
-class UE5_HORRORSGAME_API UBTTask_MeleeAttack : public UBTTask_BlackboardBase
+class UE5_HORRORSGAME_API UBTTask_Skill : public UBTTask_BlackboardBase
 {
 	GENERATED_BODY()
-	
 public:
-	UBTTask_MeleeAttack();
+	UBTTask_Skill();
 	EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent &OwnerComp, uint8 *NodeMemory)override;
 
 private:
-	bool MontageHasFinished(AEnemyCharacter *const NPC);
 	bool BossMontageHasFinished(ABossEnemyCharacter *const Boss);
 };
