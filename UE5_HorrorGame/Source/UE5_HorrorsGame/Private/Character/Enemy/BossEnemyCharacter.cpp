@@ -8,21 +8,59 @@
 
 ABossEnemyCharacter::ABossEnemyCharacter()
 {
+	PrimaryActorTick.bCanEverTick = true;
+
 	MaxHealth = 200.0f;
 	CurHealth = MaxHealth;
 }
 
+void ABossEnemyCharacter::PlayAttackAnim()
+{
+	if (AttackMontage)
+	{
+		PlayAnimMontage(AttackMontage);
+	}
+}
+
+void ABossEnemyCharacter::PlaySkillAnim()
+{
+	if (SkillMontage)
+	{
+		PlayAnimMontage(SkillMontage);
+	}
+}
+
+void ABossEnemyCharacter::PlayDeathAnim()
+{
+	if (DeathMontage)
+	{
+		PlayAnimMontage(DeathMontage);
+	}
+}
+
+void ABossEnemyCharacter::PlayHitAnim()
+{
+	if (HitMontage)
+	{
+		PlayAnimMontage(HitMontage);
+	}
+}
+
 void ABossEnemyCharacter::BeginPlay()
 {
+	Super::BeginPlay();
 	HUD = Cast<AHorrorsHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
 }
 
 void ABossEnemyCharacter::Tick(float DeltaTime)
 {
+	Super::Tick(DeltaTime);
 }
 
 void ABossEnemyCharacter::Die(float KillingDamage, FDamageEvent const &DamageEvent, AController *Killer, AActor *DamageCauser)
 {
+	CurHealth = FMath::Min(0, CurHealth);
+	this->Destroy();
 }
 
 void ABossEnemyCharacter::MeleeAttackWithSweepTrace()
