@@ -24,8 +24,17 @@ public:
 	// =					  Functionary	   				     = 
 	// ===========================================================
 	ABossEnemyCharacter();
-	UBehaviorTree *GetBehaviorTree() const { return Tree; }
+	
+	void PlayAttackAnim();
+	void PlaySkillAnim();
+	void PlayDeathAnim();
+	void PlayHitAnim();
 
+	FORCEINLINE UBehaviorTree *GetBehaviorTree() const { return Tree; }
+	FORCEINLINE UAnimMontage *GetAttackAnimation() const { return AttackMontage; }
+	FORCEINLINE UAnimMontage *GetSkillAnimation() const { return SkillMontage; }
+	FORCEINLINE UAnimMontage *GetDeathAnimation() const { return DeathMontage; }
+	FORCEINLINE UAnimMontage *GetHitAnimation() const { return HitMontage; }
 protected:
 	// ===========================================================
 	// =                  Variable / Property					 =
@@ -48,10 +57,10 @@ private:
 	// ===========================================================
 	// =                  Variable / Property					 =
 	// ===========================================================
-	UPROPERTY(EditAnywhere, Category = "Anim", meta = (AllowPrivateAccess = "ture"))
+	UPROPERTY(EditAnywhere, Category = "Animation", meta = (AllowPrivateAccess = "ture"))
 	UAnimMontage *AttackMontage;
 
-	UPROPERTY(EditAnywhere, Category = "Anim", meta = (AllowPrivateAccess = "ture"))
+	UPROPERTY(EditAnywhere, Category = "Animation", meta = (AllowPrivateAccess = "ture"))
 	UAnimMontage *SkillMontage;
 
 	// ===========================================================
