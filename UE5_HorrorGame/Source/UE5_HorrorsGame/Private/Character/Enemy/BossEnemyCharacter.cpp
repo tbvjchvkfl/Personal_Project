@@ -54,7 +54,6 @@ bool ABossEnemyCharacter::SkillCoolDown(float CoolTime)
 		GetWorldTimerManager().SetTimer(Timer, this, &ABossEnemyCharacter::ResetCoolDown, 5.0f, false);
 		return true;
 	}
-	
 	return false;
 }
 
