@@ -46,6 +46,24 @@ void ABossEnemyCharacter::PlayHitAnim()
 	}
 }
 
+bool ABossEnemyCharacter::SkillCoolDown(float CoolTime)
+{
+	if (!bIsCoolTime)
+	{
+		bIsCoolTime = true;
+		GetWorldTimerManager().SetTimer(Timer, this, &ABossEnemyCharacter::ResetCoolDown, 5.0f, false);
+		return true;
+	}
+	
+	return false;
+}
+
+void ABossEnemyCharacter::ResetCoolDown()
+{
+	bIsCoolTime = false;
+	GetWorldTimerManager().ClearTimer(Timer);
+}
+
 void ABossEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
