@@ -29,6 +29,8 @@ public:
 	void PlaySkillAnim();
 	void PlayDeathAnim();
 	void PlayHitAnim();
+	bool SkillCoolDown(float CoolTime);
+	void ResetCoolDown();
 
 	FORCEINLINE UBehaviorTree *GetBehaviorTree() const { return Tree; }
 	FORCEINLINE UAnimMontage *GetAttackAnimation() const { return AttackMontage; }
@@ -44,6 +46,9 @@ protected:
 
 	class AHorrorsHUD *HUD;
 
+	FTimerHandle Timer;
+
+	bool bIsCoolTime;
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
