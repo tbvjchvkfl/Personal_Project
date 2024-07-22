@@ -9,6 +9,7 @@
 class UBehaviorTree;
 class APlayerCharacter;
 class AHorrorsHUD;
+class AProjectile;
 
 UCLASS()
 class UE5_HORRORSGAME_API ABossEnemyCharacter : public ABaseCharacter
@@ -32,6 +33,10 @@ public:
 	bool SkillCoolDown(float CoolTime);
 	void ResetCoolDown();
 
+	void MeleeAttackWithSweepTrace();
+
+	void DoSkillAction();
+
 	FORCEINLINE UBehaviorTree *GetBehaviorTree() const { return Tree; }
 	FORCEINLINE UAnimMontage *GetAttackAnimation() const { return AttackMontage; }
 	FORCEINLINE UAnimMontage *GetSkillAnimation() const { return SkillMontage; }
@@ -49,14 +54,15 @@ protected:
 	FTimerHandle Timer;
 
 	bool bIsCoolTime;
+
+	UPROPERTY(EditAnywhere, Category = "Projectile")
+	TSubclassOf<AProjectile> ShootProjectile;
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
 	virtual void BeginPlay()override;
 	virtual void Tick(float DeltaTime)override;
 	virtual void Die(float KillingDamage, struct FDamageEvent const &DamageEvent, AController *Killer, AActor *DamageCauser) override;
-
-	void MeleeAttackWithSweepTrace();
 
 private:
 	// ===========================================================
