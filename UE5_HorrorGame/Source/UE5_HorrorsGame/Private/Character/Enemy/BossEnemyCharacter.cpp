@@ -51,7 +51,7 @@ bool ABossEnemyCharacter::SkillCoolDown(float CoolTime)
 	if (!bIsCoolTime)
 	{
 		bIsCoolTime = true;
-		GetWorldTimerManager().SetTimer(Timer, this, &ABossEnemyCharacter::ResetCoolDown, 5.0f, false);
+		GetWorldTimerManager().SetTimer(Timer, this, &ABossEnemyCharacter::ResetCoolDown, 20.0f, false);
 		return true;
 	}
 	return false;
@@ -95,6 +95,20 @@ void ABossEnemyCharacter::MeleeAttackWithSweepTrace()
 			{
 				UGameplayStatics::ApplyDamage(Target, 30.0f, NULL, this, UDamageType::StaticClass());
 			}
+		}
+	}
+}
+
+void ABossEnemyCharacter::DoSkillAction()
+{
+	if (ShootProjectile)
+	{
+		if (GetWorld())
+		{
+			auto StartLocation = GetActorLocation() + FVector(0.0f, 0.0f, 80.0f);
+			auto StartRotation = GetControlRotation();
+			FActorSpawnParameters SpawnParams;
+			GetWorld()->SpawnActor<AProjectile>(ShootProjectile, StartLocation, StartRotation, SpawnParams);
 		}
 	}
 }
