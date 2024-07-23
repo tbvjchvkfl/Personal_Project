@@ -17,5 +17,12 @@ public:
 	EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent &OwnerComp, uint8 *NodeMemory)override;
 
 private:
-	bool BossMontageHasFinished(ABossEnemyCharacter *const Boss);
+
+	UPROPERTY(EditAnywhere, Category = "Attack", meta = (AllowPrivateAccess = "true"))
+	float AttackRange;
+
+	UPROPERTY(EditAnywhere, Category = "Attack", meta = (AllowPrivateAccess = "true"))
+	float CoolDown;
+
+	void AttackSkill(ABossEnemyCharacter *const Boss, ABossEnemyController *const BossController, APlayerCharacter* Player);
 };
