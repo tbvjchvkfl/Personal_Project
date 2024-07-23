@@ -28,7 +28,7 @@ void UBTService_IsSkillRange::OnBecomeRelevant(UBehaviorTreeComponent &OwnerComp
 
 bool UBTService_IsSkillRange::IsDoingSkill(ABossEnemyCharacter *BossEnemy, APlayerCharacter *Target)
 {
-	if (BossEnemy->GetDistanceTo(Target) <= MeleeRange && BossEnemy->SkillCoolDown(SkillDelay))
+	if (BossEnemy->GetDistanceTo(Target) >= SkillRange && BossEnemy->SkillCoolDown(SkillDelay))
 	{
 		return true;
 	}
