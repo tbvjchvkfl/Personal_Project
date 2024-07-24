@@ -16,6 +16,7 @@
 #include "Component/InventoryComponent.h"
 #include "Object/Item/PickUpItem.h"
 #include "Object/InteractionDoor.h"
+#include "Object/InteractionDoorSingle.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
 #include "Kismet/GameplayStatics.h"
@@ -32,10 +33,6 @@ APlayerCharacter::APlayerCharacter() : KillCount(0), InteractionCheckDistance(20
 	FollowCamera->SetupAttachment(CameraBoom);
 	FollowCamera->SetRelativeLocation(FVector(0.0f, 50.0f, 0.0f));
 	FollowCamera->bUsePawnControlRotation = false;
-
-	CollisionSphere = CreateDefaultSubobject<USphereComponent>("CollisionSphere");
-	CollisionSphere->SetupAttachment(RootComponent);
-	CollisionSphere->InitSphereRadius(200.0f);
 
 	ShotGunMesh = CreateDefaultSubobject<UStaticMeshComponent>("ShotGunMesh");
 	ShotGunMesh->SetupAttachment(GetMesh(), "SubWeaponSocket");
@@ -107,8 +104,6 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCom
 	PlayerInputComponent->BindAxis("TurnRight", this, &APlayerCharacter::AddControllerYawInput);
 }
 
-
-
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -120,9 +115,7 @@ void APlayerCharacter::BeginPlay()
 	SwitchingGun(0);
 	UpdateCurrentWeaponVisibility();
 	HUD->GetInGameHUDWidget()->InitializeHUD();
-	
-	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &APlayerCharacter::OnOverlapBegin);
-	CollisionSphere->OnComponentEndOverlap.AddDynamic(this, &APlayerCharacter::OnOverlapEnd);
+	HUD->GetInGameHUDWidget()->HideTutorialWidget();
 }
 
 void APlayerCharacter::MoveForward(float Value)
@@ -258,7 +251,7 @@ void APlayerCharacter::Interaction()
 	
 	FHitResult TraceHit;
 
-	if (GetWorld()->LineTraceSingleByChannel(TraceHit, TraceStart, TraceEnd, ECC_Visibility, QueryParams))
+	if (GetWorld()->LineTraceSingleByChannel(TraceHit, TraceStart, TraceEnd, ECollisionChannel::ECC_GameTraceChannel2, QueryParams))
 	{
 		if (TraceHit.bBlockingHit)
 		{
@@ -268,6 +261,11 @@ void APlayerCharacter::Interaction()
 				InteractableInterface->Interaction(this);
 			}
 			if (auto Devie = Cast<AInteractionDoor>(TraceHit.GetActor()))
+			{
+				InteractableInterface = TraceHit.GetActor();
+				InteractableInterface->Interaction(this);
+			}
+			if (auto Device = Cast<AInteractionDoorSingle>(TraceHit.GetActor()))
 			{
 				InteractableInterface = TraceHit.GetActor();
 				InteractableInterface->Interaction(this);
@@ -288,30 +286,6 @@ void APlayerCharacter::SetupStimulusSource()
 	{
 		StimulusSource->RegisterForSense(TSubclassOf<UAISense_Sight>());
 		StimulusSource->RegisterWithPerceptionSystem();
-	}
-}
-
-void APlayerCharacter::OnOverlapBegin(UPrimitiveComponent *const OverlapComp, AActor *const OtherActor, UPrimitiveComponent *const OtherComponent, int const OtherBodyIndex, bool const FromSweep, FHitResult const &SweepResult)
-{
-	if (OtherActor == this)
-	{
-		return;
-	}
-	if (auto item = Cast<APickUpItem>(OtherActor))
-	{
-		HUD->GetInGameHUDWidget()->ShowInteractUI();
-	}
-}
-
-void APlayerCharacter::OnOverlapEnd(UPrimitiveComponent *const OverlapComp, AActor *const OtherActor, UPrimitiveComponent *const OtherComponent, int const OtherBodyIndex)
-{
-	if (OtherActor == this)
-	{
-		return;
-	}
-	if (auto item = Cast<APickUpItem>(OtherActor))
-	{
-		HUD->GetInGameHUDWidget()->HideInteractUI();
 	}
 }
 
