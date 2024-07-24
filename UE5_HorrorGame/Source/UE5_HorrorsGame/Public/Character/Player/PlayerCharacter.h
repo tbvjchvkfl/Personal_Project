@@ -34,9 +34,6 @@ public:
 	UCameraComponent *FollowCamera;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Component")
-	USphereComponent *CollisionSphere;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Component")
 	UStaticMeshComponent *PisotlMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Component")
@@ -54,6 +51,7 @@ public:
 	bool bPistolReloading;
 	bool bShotGunReloading;
 
+	UPROPERTY(BlueprintReadOnly)
 	int KillCount;
 	// ===========================================================
 	// =					  Functionary	   				     = 
@@ -134,11 +132,6 @@ protected:
 	void DoSubAction();
 	
 	void SetupStimulusSource();
-
-	UFUNCTION()
-	void OnOverlapBegin(UPrimitiveComponent *const OverlapComp, AActor *const OtherActor, UPrimitiveComponent *const OtherComponent, int const OtherBodyIndex, bool const FromSweep, FHitResult const &SweepResult);
-	UFUNCTION()
-	void OnOverlapEnd(UPrimitiveComponent *const OverlapComp, AActor *const OtherActor, UPrimitiveComponent *const OtherComponent, int const OtherBodyIndex);
 
 private:
 	// ===========================================================
