@@ -14,6 +14,10 @@ https://github.com/tbvjchvkfl/Personal_Project/assets/137769043/f6b6c91a-f6d2-46
 > #### 사용 기술
 >   - Unreal C++ & Blueprint
 
+핵심 기능
+-
+ㅁㄴㅇㄹ
+
 기능 구현
 -
 
