@@ -25,14 +25,13 @@ public:
 	// ===========================================================
 	AAI_Controller();
 	virtual FRotator GetControlRotation() const override;
-	
 
 private:
 	// ===========================================================
 	// =                  Variable / Property					 =
 	// ===========================================================
-	UPROPERTY(Transient)
-	UBlackboardComponent *BlackboardComp;
+	//UPROPERTY(Transient)
+	//UBlackboardComponent *BlackboardComp;
 
 	UPROPERTY(Transient)
 	UBehaviorTreeComponent *BehaviorComp;

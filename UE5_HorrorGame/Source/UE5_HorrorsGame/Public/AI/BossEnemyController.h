@@ -8,6 +8,7 @@
 
 class UBehaviorTreeComponent;
 class UAISenseConfig_Sight;
+class ABossEnemyCharacter;
 
 UCLASS()
 class UE5_HORRORSGAME_API ABossEnemyController : public AAIController
@@ -18,7 +19,11 @@ public:
 	// =                  Variable / Property					 =
 	// ===========================================================
 	
+	UPROPERTY()
+	ABossEnemyCharacter *BossCharacter;
 
+	UPROPERTY()
+	APlayerCharacter *TargetCharacter;
 
 	// ===========================================================
 	// =					  Functionary	   				     = 
@@ -35,7 +40,17 @@ private:
 
 	UAISenseConfig_Sight *BossSightConfig;
 
+	UPROPERTY(EditAnywhere, Category = "OwnerCharacter", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<ABossEnemyCharacter> OwnerCharacter;
 
+	UPROPERTY(EditAnywhere, Category = "OwnerCharacter", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<APlayerCharacter> Target;
+
+	UPROPERTY(EditAnywhere, Category = "OwnerCharacter", meta = (AllowPrivateAccess = "true"))
+	float AttackRange;
+
+	UPROPERTY(VisibleAnywhere, Category = "OwnerCharacter", meta = (AllowPrivateAccess = "true"))
+	AHorrorsHUD *HUD;
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
