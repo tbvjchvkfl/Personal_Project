@@ -16,7 +16,9 @@ https://github.com/tbvjchvkfl/Personal_Project/assets/137769043/f6b6c91a-f6d2-46
 
 핵심 기능
 -
-ㅁㄴㅇㄹ
+> - 데이터 테이블을 활용한 Item, Inventory, Tutorial 기능
+> - FSM 활용 AI와 거리에 따른 보스의 공격 패턴
+
 
 기능 구현
 -
