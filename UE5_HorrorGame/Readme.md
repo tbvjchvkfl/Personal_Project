@@ -6,18 +6,12 @@ Horror's Game
 -
 https://github.com/tbvjchvkfl/Personal_Project/assets/137769043/f6b6c91a-f6d2-4659-9956-b415d3347c62
 
-제작 기간 & 사용 기술
--
-> #### 제작 기간
->   - 30일 소요 (개인)
-
-> #### 사용 기술
->   - Unreal C++ & Blueprint
-
 핵심 기능
 -
-> - 데이터 테이블을 활용한 Item, Inventory, Tutorial 기능
-> - FSM 활용 AI와 거리에 따른 보스의 공격 패턴
+> - 데이터 테이블을 활용한 Item, Tutorial 기능
+> - NPC의 상태별 행동패턴과 거리에 따른 보스 NPC의 공격 패턴
+> - HUD 활용 전체 UI 관리
+> - 액터 컴포넌트와 인터페이스를 활용한 Inventory
 
 
 기능 구현
