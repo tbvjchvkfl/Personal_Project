@@ -19,33 +19,44 @@ UBTTask_Skill::UBTTask_Skill()
 
 EBTNodeResult::Type UBTTask_Skill::ExecuteTask(UBehaviorTreeComponent &OwnerComp, uint8 *NodeMemory)
 {
-    auto const OutOfRange = !OwnerComp.GetBlackboardComponent()->GetValueAsBool(GetSelectedBlackboardKey());
-    if (OutOfRange)
-    {
-        FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
-        return EBTNodeResult::Failed;
-    }
-
     auto *const Controller = Cast<ABossEnemyController>(OwnerComp.GetAIOwner());
 
     auto *const Boss = Cast<ABossEnemyCharacter>(Controller->GetPawn());
 
+    auto *const BossEnemyAnimInstance = Cast<UBossEnemyAnimInstance>(Boss->GetMesh()->GetAnimInstance());
+
     auto *const Target = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
-    //공격 함수 호출
-    AttackSkill(Boss, Controller, Target);
-
-    FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-    return EBTNodeResult::Succeeded;
+    if (!CheckSkill(OwnerComp, Boss, Target, BossEnemyAnimInstance))
+    {
+        FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
+        return EBTNodeResult::Failed;
+    }
+    else
+    {
+        AttackSkill(Controller, BossEnemyAnimInstance);
+        FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+        return EBTNodeResult::Succeeded;
+    }
 }
 
-void UBTTask_Skill::AttackSkill(ABossEnemyCharacter *const Boss, ABossEnemyController* const BossController, APlayerCharacter *Player)
+void UBTTask_Skill::AttackSkill(ABossEnemyController* const BossController, UBossEnemyAnimInstance* const BossAnim)
 {
-    auto BossEnemyAnimInstance = Cast<UBossEnemyAnimInstance>(Boss->GetMesh()->GetAnimInstance());
+    BossController->StopMovement();
+    BossAnim->DoSkill(SkillDelay);
+}
 
-    if (Boss->SkillCoolDown(CoolDown) && Boss->GetDistanceTo(Player) > AttackRange)
+bool UBTTask_Skill::CheckSkill(UBehaviorTreeComponent &TreeComp, ABossEnemyCharacter *const Boss, APlayerCharacter *Player, UBossEnemyAnimInstance *const BossAnimInstance)
+{
+    if (Boss->GetDistanceTo(Player) >= SkillRange && !BossAnimInstance->GetCoolTime())
     {
-        BossController->StopMovement();
-        BossEnemyAnimInstance->DoSkill();
+        TreeComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), true);
+        return true;
     }
+    else
+    {
+        TreeComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), false);
+        return false;
+    }
+    
 }

@@ -6,7 +6,7 @@
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "Character/Enemy/EnemyCharacter.h"
 #include "Components/SkeletalMeshComponent.h"
-
+#include "BehaviorTree/BlackboardComponent.h"
 
 UBTTask_Screaming::UBTTask_Screaming()
 {
@@ -25,7 +25,6 @@ EBTNodeResult::Type UBTTask_Screaming::ExecuteTask(UBehaviorTreeComponent &Owner
 			InterfaceCombat->Execute_ScreamAction(NPC);
 		}
 	}
-
 	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	return EBTNodeResult::Succeeded;
 }

@@ -5,7 +5,9 @@
 #include "NavigationSystem.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AI/AI_Controller.h"
+#include "AI/BossEnemyController.h"
 #include "Character/Enemy/EnemyCharacter.h"
+#include "Character/Enemy/BossEnemyCharacter.h"
 
 UBTTask_FindRandomLocation::UBTTask_FindRandomLocation(FObjectInitializer const &ObjectInitializer)
 {
@@ -25,6 +27,24 @@ EBTNodeResult::Type UBTTask_FindRandomLocation::ExecuteTask(UBehaviorTreeCompone
 				if (NavSys->GetRandomPointInNavigableRadius(Origin, SearchRadius, Loc))
 				{
 					OwnerComp.GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), Loc.Location);
+				}
+
+				FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+				return EBTNodeResult::Succeeded;
+			}
+		}
+	}
+	if (ABossEnemyController *const BossController = Cast<ABossEnemyController>(OwnerComp.GetAIOwner()))
+	{
+		if (auto *const Boss = Cast<ABossEnemyCharacter>(BossController->GetPawn()))
+		{
+			FVector const Origin = Boss->GetActorLocation();
+			if (auto *const NavSys = UNavigationSystemV1::GetCurrent(GetWorld()))
+			{
+				FNavLocation LOC;
+				if (NavSys->GetRandomPointInNavigableRadius(Origin, SearchRadius, LOC))
+				{
+					OwnerComp.GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), LOC.Location);
 				}
 				FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 				return EBTNodeResult::Succeeded;
