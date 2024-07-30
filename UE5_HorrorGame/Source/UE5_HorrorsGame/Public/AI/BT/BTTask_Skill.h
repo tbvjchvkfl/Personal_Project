@@ -19,10 +19,12 @@ public:
 private:
 
 	UPROPERTY(EditAnywhere, Category = "Attack", meta = (AllowPrivateAccess = "true"))
-	float AttackRange;
+	float SkillRange;
 
 	UPROPERTY(EditAnywhere, Category = "Attack", meta = (AllowPrivateAccess = "true"))
-	float CoolDown;
+	float SkillDelay;
 
-	void AttackSkill(ABossEnemyCharacter *const Boss, ABossEnemyController *const BossController, APlayerCharacter* Player);
+	void AttackSkill(ABossEnemyController *const BossController, UBossEnemyAnimInstance *const BossAnim);
+
+	bool CheckSkill(UBehaviorTreeComponent &TreeComp, ABossEnemyCharacter *const Boss, APlayerCharacter *Player, UBossEnemyAnimInstance *const BossAnimInstance);
 };
