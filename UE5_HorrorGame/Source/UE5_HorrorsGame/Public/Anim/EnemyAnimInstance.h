@@ -23,25 +23,23 @@ public:
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
+
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds)override;
 
+	void HitAnim();
+	void CheckHitAnim();
 private:
 	// ===========================================================
 	// =                  Variable / Property					 =
 	// ===========================================================
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	float MovementSpeed;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	class UPawnMovementComponent *PlayablePawnMovement;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	class UCharacterMovementComponent *PlayerCharacterMovement;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	class APawn *PlayerPawn;
+	float MoveSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class AEnemyCharacter *EnemyCharacter;
+
+	UPROPERTY(EditAnywhere, Category = "Animation", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage *HitAnimation;
+
 };

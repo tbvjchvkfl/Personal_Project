@@ -18,7 +18,7 @@ public:
 	// =                  Variable / Property					 =
 	// ===========================================================
 
-
+	
 
 	// ===========================================================
 	// =					  Functionary	   				     = 
@@ -36,6 +36,10 @@ public:
 	UFUNCTION()
 	void StartAimming();
 	
+	void HitAnim();
+
+	void CheckHitAnim();
+
 private:
 	// ===========================================================
 	// =                  Variable / Property					 =
@@ -47,10 +51,19 @@ private:
 	float Direction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	bool bIsAimming;
+	bool bIsPistolWeapon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	bool bIsShotGunWeapon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	bool bIsReload;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	bool bIsPistolReload;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	bool bIsShotGunReload;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UPawnMovementComponent *PlayablePawnMovement;
@@ -63,4 +76,7 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class APlayerCharacter *PlayerCharacter;
+
+	UPROPERTY(EditAnywhere, Category = "Animation", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage *HitAnimation;
 };

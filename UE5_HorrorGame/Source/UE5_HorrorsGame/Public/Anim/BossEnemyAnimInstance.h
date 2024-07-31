@@ -26,7 +26,11 @@ public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds)override;
 
-	void DoSkill();
+	FORCEINLINE bool GetCoolTime()const { return bIsCoolTime; }
+	void AttackCoolDown(float CoolTime);
+	void DoSkill(float CoolDown);
+	void CheckHitAnim();
+	void HitAnim();
 private:
 	// ===========================================================
 	// =                  Variable / Property					 =
@@ -37,11 +41,19 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	bool bIsScreaming;
 
+	UPROPERTY(VisibleAnywhere, Category = "Animation", meta = (AllowPrivateAccess = "true"))
+	bool bIsCoolTime;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	ABossEnemyCharacter *BossCharacter;
 
 	UPROPERTY(EditAnywhere, Category = "Animation", meta = (AllowPrivateAccess = "true"))
 	UAnimMontage *Skill;
+
+	UPROPERTY(EditAnywhere, Category = "Animation", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage *HitAnimation;
+
+	FTimerHandle TimerHandle;
 
 	// ===========================================================
 	// =					  Functionary	   				     = 
