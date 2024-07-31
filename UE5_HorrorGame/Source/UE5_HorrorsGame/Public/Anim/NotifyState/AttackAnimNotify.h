@@ -13,5 +13,9 @@ UCLASS()
 class UE5_HORRORSGAME_API UAttackAnimNotify : public UAnimNotify
 {
 	GENERATED_BODY()
-	
+	virtual void OnAnimNotifyCreatedInEditor(FAnimNotifyEvent &ContainingAnimNotifyEvent)override;
+
+	virtual void Notify(USkeletalMeshComponent *MeshComp, UAnimSequenceBase *Animation) override;
+
+	//virtual void Notify(USkeletalMeshComponent *MeshComp, UAnimSequenceBase *Animation, const FAnimNotifyEventReference &EventReference) override;
 };
