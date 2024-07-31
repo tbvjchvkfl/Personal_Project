@@ -22,9 +22,12 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	if (PlayerCharacter)
 	{
 		MovementSpeed = PlayerCharacter->GetVelocity().Length();
-		bIsAimming = PlayerCharacter->bAimming;
+		bIsPistolWeapon = PlayerCharacter->bPistolWeapon;
+		bIsShotGunWeapon = PlayerCharacter->bShotGunWeapon;
 		bIsReload = PlayerCharacter->bReloading;
-		Direction = CalculateDirection(PlayerCharacter->GetVelocity(), PlayerCharacter->GetActorRotation());
+		bIsPistolReload = PlayerCharacter->bPistolReloading;
+		bIsShotGunReload = PlayerCharacter->bShotGunReloading;
+		Direction = UAnimInstance::CalculateDirection(PlayerCharacter->GetVelocity(), PlayerCharacter->GetActorRotation());
 	}
 }
 
@@ -44,5 +47,20 @@ void UPlayerAnimInstance::EndReloading()
 
 void UPlayerAnimInstance::StartAimming()
 {
-	bIsAimming = true;
+}
+
+void UPlayerAnimInstance::HitAnim()
+{
+	if (Montage_GetIsStopped(HitAnimation))
+	{
+		Montage_Play(HitAnimation);
+	}
+}
+
+void UPlayerAnimInstance::CheckHitAnim()
+{
+	if (!Montage_GetIsStopped(HitAnimation))
+	{
+		Montage_Stop(0.1f, HitAnimation);
+	}
 }

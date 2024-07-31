@@ -4,10 +4,12 @@
 #include "Anim/BossEnemyAnimInstance.h"
 #include "Character/Enemy/BossEnemyCharacter.h"
 
+
 void UBossEnemyAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
 	BossCharacter = Cast<ABossEnemyCharacter>(TryGetPawnOwner());
+	bIsCoolTime = false;
 }
 
 void UBossEnemyAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
@@ -23,10 +25,45 @@ void UBossEnemyAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	}
 }
 
-void UBossEnemyAnimInstance::DoSkill()
+void UBossEnemyAnimInstance::AttackCoolDown(float CoolTime)
+{
+	if (!bIsCoolTime)
+	{
+		bIsCoolTime = true;
+		GetWorld()->GetTimerManager().SetTimer
+		(TimerHandle,
+		[this]()
+			{
+				bIsCoolTime = false;
+				GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
+			},
+		CoolTime,
+		false
+		);
+	}
+}
+
+void UBossEnemyAnimInstance::DoSkill(float CoolDown)
 {
 	if (Montage_GetIsStopped(Skill))
 	{
 		Montage_Play(Skill);
+		AttackCoolDown(CoolDown);
+	}
+}
+
+void UBossEnemyAnimInstance::CheckHitAnim()
+{
+	if (!Montage_GetIsStopped(HitAnimation))
+	{
+		Montage_Stop(0.1f, HitAnimation);
+	}
+}
+
+void UBossEnemyAnimInstance::HitAnim()
+{
+	if (Montage_GetIsStopped(HitAnimation))
+	{
+		Montage_Play(HitAnimation);
 	}
 }
