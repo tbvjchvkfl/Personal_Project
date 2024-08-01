@@ -3,8 +3,9 @@
 
 #include "Armor/Weapon_ShotGun.h"
 #include "Character/Player/PlayerCharacter.h"
-#include "Kismet/GameplayStatics.h"
 #include "Character/Enemy/EnemyCharacter.h"
+#include "Character/Enemy/BossEnemyCharacter.h"
+#include "Kismet/GameplayStatics.h"
 #include "Camera/CameraComponent.h"
 
 
@@ -72,8 +73,12 @@ void AWeapon_ShotGun::FireWithLineTrace(TWeakObjectPtr<APlayerCharacter> owner)
 				{
 					if (auto *NPC = Cast<AEnemyCharacter>(HitTrace.GetActor()))
 					{
-						UGameplayStatics::ApplyDamage(NPC, 20.0f, NULL, this, UDamageType::StaticClass());
+						UGameplayStatics::ApplyDamage(NPC, 60.0f, NULL, this, UDamageType::StaticClass());
 
+					}
+					if (auto Boss = Cast<ABossEnemyCharacter>(HitTrace.GetActor()))
+					{
+						UGameplayStatics::ApplyDamage(Boss, 40.0f, NULL, this, UDamageType::StaticClass());
 					}
 				}
 			}

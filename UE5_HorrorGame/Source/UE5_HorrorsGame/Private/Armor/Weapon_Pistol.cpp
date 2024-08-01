@@ -4,6 +4,7 @@
 #include "Armor/Weapon_Pistol.h"
 #include "Character/Player/PlayerCharacter.h"
 #include "Character/Enemy/EnemyCharacter.h"
+#include "Character/Enemy/BossEnemyCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -37,11 +38,6 @@ void AWeapon_Pistol::StartShoot(TWeakObjectPtr<APlayerCharacter> owner)
 	}
 }
 
-void AWeapon_Pistol::EndShoot()
-{
-	
-}
-
 void AWeapon_Pistol::Reload()
 {
 	ResetAmmoCount();
@@ -58,36 +54,34 @@ void AWeapon_Pistol::FireWithLineTrace(TWeakObjectPtr<APlayerCharacter> owner)
 		if (ownerController)
 		{
 			FVector StartTrace = WeaponMesh->GetSocketLocation("FirePoint");
-			FVector EndTrace = StartTrace + Character->FollowCamera->GetForwardVector() * TraceDistance;  //(ownerController->GetControlRotation().Vector() * TraceDistance);
+			FVector EndTrace = StartTrace + Character->FollowCamera->GetForwardVector() * TraceDistance;
 
 			FCollisionQueryParams CollisionParam;
 			CollisionParam.AddIgnoredActor(this);
-			
+
 			FHitResult HitTrace;
 
-			DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor::Red, false, 1.0f);
-			
-
-			if (GetWorld()->LineTraceSingleByChannel(HitTrace, StartTrace, EndTrace, ECC_Visibility, CollisionParam))
+			if (GetWorld()->LineTraceSingleByChannel(HitTrace, StartTrace, EndTrace, ECC_GameTraceChannel3, CollisionParam))
 			{
 				FRotator Rotation;
 				FVector ShotDirection = -Rotation.Vector();
 
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Impact, HitTrace.Location, ShotDirection.Rotation());
-				
+
 				if (HitTrace.bBlockingHit)
 				{
-					if(auto *NPC = Cast<AEnemyCharacter>(HitTrace.GetActor()))
+					if (auto *NPC = Cast<AEnemyCharacter>(HitTrace.GetActor()))
 					{
-						auto HP = NPC->GetCurHealth() - 20.0f;
-						NPC->SetCurHealth(HP);
-						GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Cyan, FString::Printf(TEXT("HP : %f"), HP));
+						UGameplayStatics::ApplyDamage(NPC, 20.0f, NULL, this, UDamageType::StaticClass());
+					}
+					if (auto Boss = Cast<ABossEnemyCharacter>(HitTrace.GetActor()))
+					{
+						UGameplayStatics::ApplyDamage(Boss, 20.0f, NULL, this, UDamageType::StaticClass());
 					}
 				}
 			}
 			
 			DecreaseAmmoCount();
-			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Green, FString::Printf(TEXT("CurAmmo : %i"), CurAmmoCount));
 
 			if (CurAmmoCount == 0)
 			{

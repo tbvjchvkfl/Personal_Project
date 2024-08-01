@@ -33,10 +33,6 @@ void AWeaponBase::StartShoot(TWeakObjectPtr<APlayerCharacter> owner)
 {
 }
 
-void AWeaponBase::EndShoot()
-{
-}
-
 void AWeaponBase::Reload()
 {
 }
