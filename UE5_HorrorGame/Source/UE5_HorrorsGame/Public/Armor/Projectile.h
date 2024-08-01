@@ -8,6 +8,7 @@
 
 class USphereComponent;
 class APlayerCharacter;
+class UProjectileMovementComponent;
 
 UCLASS()
 class UE5_HORRORSGAME_API AProjectile : public AActor
@@ -37,6 +38,9 @@ protected:
 	// ===========================================================
 	UPROPERTY(VisibleAnywhere, Category = "Projectile", meta = (AllowPrivateAccess = "true"))
 	USphereComponent *CollisionSphere;
+
+	UPROPERTY(VisibleAnywhere, Category = "Projectile", meta = (AllowPrivateAccess = "true"))
+	UProjectileMovementComponent *ProjectileMovement;
 
 	UPROPERTY(EditAnywhere, Category = "Projectile", meta = (AllowPrivateAccess = "true"))
 	float DamageRate;

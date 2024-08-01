@@ -33,6 +33,7 @@ public:
 
 	FDeli_Multi ShowUIDelegate;
 
+	float AttackRate;
 
 	// ===========================================================
 	// =					  Functionary	   				     = 
@@ -43,12 +44,12 @@ public:
 	inline int GetCurAmmo() { return CurAmmoCount; }
 	inline int GetMaxAmmo() { return MaxAmmoCount; }
 	inline float GetReloadDelayTime() { return ReloadingDelayTime; }
+	inline USkeletalMeshComponent *GetWeaponMesh() const { return WeaponMesh; }
 
 	void DecreaseAmmoCount();
 	void ResetAmmoCount();
 
 	virtual void StartShoot(TWeakObjectPtr<APlayerCharacter> owner);
-	virtual void EndShoot();
 	virtual void Reload();
 
 

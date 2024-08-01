@@ -33,7 +33,6 @@ public:
 	AWeapon_Pistol();
 
 	virtual void StartShoot(TWeakObjectPtr<APlayerCharacter>owner)override;
-	virtual void EndShoot()override;
 	virtual void Reload()override;
 
 	void FireWithLineTrace(TWeakObjectPtr<APlayerCharacter>owner);
