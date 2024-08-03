@@ -1,6 +1,6 @@
 Horror's Game
 -
-맵을 이동하며 좀비들을 무찌르는 3인칭 공포게임입니다.
+맵을 이동하며 좀비들을 무찌르는 3인칭 슈팅게임입니다.
 
 플레이 영상
 -
@@ -33,7 +33,7 @@ https://github.com/user-attachments/assets/d6d4c018-d635-46a2-9d91-9d937efa383a
     <td>qwaer</td>
   </tr>
    <tr>
-    <th>이동</th>
+    <th>상호작용</th>
     <th>달리기</th>
     <th>조준</th>
     <th>사격</th>
