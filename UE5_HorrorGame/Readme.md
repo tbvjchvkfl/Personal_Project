@@ -16,8 +16,59 @@ https://github.com/user-attachments/assets/d6d4c018-d635-46a2-9d91-9d937efa383a
 
 기능 구현
 -
-
-
+<table>
+  <tr>
+    <th colspan = "4">기능 구현 항목 모음</th>
+  </tr>
+  <tr>
+    <th>이동</th>
+    <th>달리기</th>
+    <th>조준</th>
+    <th>사격</th>
+  </tr>
+  <tr>
+    <td>asdf</td>
+    <td>tasdf</td>
+    <td>asdfasdf</td>
+    <td>qwaer</td>
+  </tr>
+   <tr>
+    <th>이동</th>
+    <th>달리기</th>
+    <th>조준</th>
+    <th>사격</th>
+  </tr>
+  <tr>
+    <td>asdf</td>
+    <td>tasdf</td>
+    <td>asdfasdf</td>
+    <td>qwaer</td>
+  </tr>
+   <tr>
+    <th>이동</th>
+    <th>달리기</th>
+    <th>조준</th>
+    <th>사격</th>
+  </tr>
+  <tr>
+    <td>asdf</td>
+    <td>tasdf</td>
+    <td>asdfasdf</td>
+    <td>qwaer</td>
+  </tr>
+   <tr>
+    <th>이동</th>
+    <th>달리기</th>
+    <th>조준</th>
+    <th>사격</th>
+  </tr>
+  <tr>
+    <td>asdf</td>
+    <td>tasdf</td>
+    <td>asdfasdf</td>
+    <td>qwaer</td>
+  </tr>
+</table>
 
 시행 착오
 -
