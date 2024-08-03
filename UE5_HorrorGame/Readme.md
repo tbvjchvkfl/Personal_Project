@@ -27,8 +27,8 @@ https://github.com/user-attachments/assets/d6d4c018-d635-46a2-9d91-9d937efa383a
     <th>사격</th>
   </tr>
   <tr>
-    <td>asdf</td>
-    <td>tasdf</td>
+    <td><img src = "https://github.com/user-attachments/assets/d6534a99-1e95-40f4-815e-d9111809b68b" width = "200" heigh = "150"></td>
+    <td><img src = "https://github.com/user-attachments/assets/935fa252-72dc-4d1b-be5b-7d31f6b21102" width = "200" heigh = "150"></td>
     <td>asdfasdf</td>
     <td>qwaer</td>
   </tr>
