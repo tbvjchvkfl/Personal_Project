@@ -27,10 +27,10 @@ https://github.com/user-attachments/assets/d6d4c018-d635-46a2-9d91-9d937efa383a
     <th>사격</th>
   </tr>
   <tr>
-    <td><img src = "https://github.com/user-attachments/assets/d6534a99-1e95-40f4-815e-d9111809b68b" width = "200" heigh = "150"></td>
-    <td><img src = "https://github.com/user-attachments/assets/935fa252-72dc-4d1b-be5b-7d31f6b21102" width = "200" heigh = "150"></td>
-    <td>asdfasdf</td>
-    <td>qwaer</td>
+    <td><img src = "https://github.com/user-attachments/assets/91103ddd-e20c-4e3c-9ce7-7319a0aff2a1" width = "200" heigh = "150"></td>
+    <td><img src = "https://github.com/user-attachments/assets/4ce3b003-bc7c-4c06-9191-eb704d837e2d" width = "200" heigh = "150"></td>
+    <td><img src = "https://github.com/user-attachments/assets/4784e008-c1af-4b22-b247-5a2bfbb7f190" width = "200" heigh = "150"</td>
+    <td><img src = "https://github.com/user-attachments/assets/5a6e2e3d-d7d8-4e3a-84d0-26b2e2c88ff8" width = "200" heigh = "150"</td>
   </tr>
    <tr>
     <th>상호작용</th>
@@ -39,10 +39,10 @@ https://github.com/user-attachments/assets/d6d4c018-d635-46a2-9d91-9d937efa383a
     <th>사격</th>
   </tr>
   <tr>
-    <td>asdf</td>
-    <td>tasdf</td>
-    <td>asdfasdf</td>
-    <td>qwaer</td>
+    <td><img src = "https://github.com/user-attachments/assets/2cad3da5-bbd8-4ece-b0af-5e142dd56f5a" width = "200" heigh = "150"</td>
+    <td><img src = "https://github.com/user-attachments/assets/d13e9117-81d6-444e-bcd5-b84c92eb2b78" width = "200" heigh = "150"</td>
+    <td><img src = "https://github.com/user-attachments/assets/b0c0e1b6-f141-4bb7-8377-4547c254d54d" width = "200" heigh = "150"</td>
+    <td><img src = "https://github.com/user-attachments/assets/971a2f92-b9dd-4d46-bf81-2f0f503cefc7" width = "200" heigh = "150"</td>
   </tr>
    <tr>
     <th>이동</th>
@@ -51,10 +51,10 @@ https://github.com/user-attachments/assets/d6d4c018-d635-46a2-9d91-9d937efa383a
     <th>사격</th>
   </tr>
   <tr>
-    <td>asdf</td>
-    <td>tasdf</td>
-    <td>asdfasdf</td>
-    <td>qwaer</td>
+    <td><img src = "https://github.com/user-attachments/assets/091b2735-9395-468a-ba74-0675f31cc49c" width = "200" heigh = "150"</td>
+    <td><img src = "https://github.com/user-attachments/assets/971a2f92-b9dd-4d46-bf81-2f0f503cefc7" width = "200" heigh = "150"</td>
+    <td><img src = "https://github.com/user-attachments/assets/971a2f92-b9dd-4d46-bf81-2f0f503cefc7" width = "200" heigh = "150"</td>
+    <td><img src = "https://github.com/user-attachments/assets/971a2f92-b9dd-4d46-bf81-2f0f503cefc7" width = "200" heigh = "150"</td>
   </tr>
    <tr>
     <th>이동</th>
@@ -63,10 +63,10 @@ https://github.com/user-attachments/assets/d6d4c018-d635-46a2-9d91-9d937efa383a
     <th>사격</th>
   </tr>
   <tr>
-    <td>asdf</td>
-    <td>tasdf</td>
-    <td>asdfasdf</td>
-    <td>qwaer</td>
+    <td><img src = "https://github.com/user-attachments/assets/971a2f92-b9dd-4d46-bf81-2f0f503cefc7" width = "200" heigh = "150"</td>
+    <td><img src = "https://github.com/user-attachments/assets/971a2f92-b9dd-4d46-bf81-2f0f503cefc7" width = "200" heigh = "150"</td>
+    <td><img src = "https://github.com/user-attachments/assets/971a2f92-b9dd-4d46-bf81-2f0f503cefc7" width = "200" heigh = "150"</td>
+    <td><img src = "https://github.com/user-attachments/assets/971a2f92-b9dd-4d46-bf81-2f0f503cefc7" width = "200" heigh = "150"</td>
   </tr>
 </table>
 
