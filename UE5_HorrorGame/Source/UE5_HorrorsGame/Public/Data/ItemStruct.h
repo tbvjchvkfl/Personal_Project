@@ -28,18 +28,6 @@ struct FItemTextData
 };
 
 USTRUCT()
-struct FItemNumericData
-{
-	GENERATED_USTRUCT_BODY()
-	
-	UPROPERTY(EditAnywhere)
-	int32 MaxStackSize;
-
-	UPROPERTY(EditAnywhere)
-	bool bIsStackable;
-};
-
-USTRUCT()
 struct FItemAssetData
 {
 	GENERATED_USTRUCT_BODY()
@@ -51,17 +39,13 @@ struct FItemAssetData
 	UStaticMesh *Mesh;
 };
 
-
 USTRUCT(BlueprintType)
 struct FItemData : public FTableRowBase
 {
 	GENERATED_USTRUCT_BODY()
 
-	FItemData() : ItemType(EItemType::Consumable)
-	{
-		TextData.Name = "None";
-		TextData.Description = "None";
-	}
+	UPROPERTY(EditAnywhere, Category = "ItemData")
+	int32 Amount;
 
 	UPROPERTY(EditAnywhere, Category = "ItemData")
 	FName ID;
@@ -71,9 +55,6 @@ struct FItemData : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, Category = "ItemData")
 	FItemTextData TextData;
-
-	UPROPERTY(EditAnywhere, Category = "ItemData")
-	FItemNumericData NumericData;
 
 	UPROPERTY(EditAnywhere, Category = "ItemData")
 	FItemAssetData AssetData;
