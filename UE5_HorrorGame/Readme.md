@@ -18,7 +18,7 @@ https://github.com/user-attachments/assets/d6d4c018-d635-46a2-9d91-9d937efa383a
 -
 <table>
   <tr>
-    <th colspan = "4">기능 구현 항목 모음</th>
+    <th colspan = "4">기능 구현 항목</th>
   </tr>
   <tr>
     <th>이동</th>
@@ -33,40 +33,40 @@ https://github.com/user-attachments/assets/d6d4c018-d635-46a2-9d91-9d937efa383a
     <td><img src = "https://github.com/user-attachments/assets/5a6e2e3d-d7d8-4e3a-84d0-26b2e2c88ff8" width = "200" heigh = "150"</td>
   </tr>
    <tr>
-    <th>상호작용</th>
-    <th>달리기</th>
-    <th>조준</th>
-    <th>사격</th>
+    <th>재장전</th>
+    <th>인벤토리와 상호작용</th>
+    <th>NPC 상태별 패턴</th>
+    <th>NPC 거리별 패턴</th>
   </tr>
   <tr>
-    <td><img src = "https://github.com/user-attachments/assets/2cad3da5-bbd8-4ece-b0af-5e142dd56f5a" width = "200" heigh = "150"</td>
-    <td><img src = "https://github.com/user-attachments/assets/d13e9117-81d6-444e-bcd5-b84c92eb2b78" width = "200" heigh = "150"</td>
+    <td><img src = "https://github.com/user-attachments/assets/7c31e4ec-1c07-4263-8699-792856c3c2da" width = "200" heigh = "150"</td>
+    <td><img src = "https://github.com/user-attachments/assets/087e7fa1-5028-4b81-96e8-8ad277d1deda" width = "200" heigh = "150"</td>
     <td><img src = "https://github.com/user-attachments/assets/b0c0e1b6-f141-4bb7-8377-4547c254d54d" width = "200" heigh = "150"</td>
     <td><img src = "https://github.com/user-attachments/assets/971a2f92-b9dd-4d46-bf81-2f0f503cefc7" width = "200" heigh = "150"</td>
   </tr>
    <tr>
-    <th>이동</th>
-    <th>달리기</th>
-    <th>조준</th>
-    <th>사격</th>
+    <th>히트 리액션과 원형 체력바</th>
+    <th>튜토리얼 트리거</th>
+    <th>결과 화면 UI</th>
+    <th></th>
   </tr>
   <tr>
-    <td><img src = "https://github.com/user-attachments/assets/091b2735-9395-468a-ba74-0675f31cc49c" width = "200" heigh = "150"</td>
-    <td><img src = "https://github.com/user-attachments/assets/971a2f92-b9dd-4d46-bf81-2f0f503cefc7" width = "200" heigh = "150"</td>
-    <td><img src = "https://github.com/user-attachments/assets/971a2f92-b9dd-4d46-bf81-2f0f503cefc7" width = "200" heigh = "150"</td>
-    <td><img src = "https://github.com/user-attachments/assets/971a2f92-b9dd-4d46-bf81-2f0f503cefc7" width = "200" heigh = "150"</td>
+    <td><img src = "https://github.com/user-attachments/assets/77a1bc56-7394-4e58-8aff-3bd5024b9f86" width = "200" heigh = "150"</td>
+    <td><img src = "https://github.com/user-attachments/assets/5bd25b9d-eaa7-4ca2-8069-b9b835d8254e" width = "200" heigh = "150"</td>
+    <td><img src = "https://github.com/user-attachments/assets/8fc87a91-791b-4eee-822a-55862598daf0" width = "200" heigh = "150"</td>
+    <td></td>
   </tr>
    <tr>
-    <th>이동</th>
-    <th>달리기</th>
-    <th>조준</th>
-    <th>사격</th>
+    <th>레벨 오브젝트 <문></th>
+    <th>레벨 오브젝트 <도깨비 불></th>
+    <th>포스트 프로세스 볼륨 <안개></th>
+    <th></th>
   </tr>
   <tr>
-    <td><img src = "https://github.com/user-attachments/assets/971a2f92-b9dd-4d46-bf81-2f0f503cefc7" width = "200" heigh = "150"</td>
-    <td><img src = "https://github.com/user-attachments/assets/971a2f92-b9dd-4d46-bf81-2f0f503cefc7" width = "200" heigh = "150"</td>
-    <td><img src = "https://github.com/user-attachments/assets/971a2f92-b9dd-4d46-bf81-2f0f503cefc7" width = "200" heigh = "150"</td>
-    <td><img src = "https://github.com/user-attachments/assets/971a2f92-b9dd-4d46-bf81-2f0f503cefc7" width = "200" heigh = "150"</td>
+    <td><img src = "https://github.com/user-attachments/assets/d0081894-e4ff-48ff-9d3f-840382566ba4" width = "200" heigh = "150"</td>
+    <td><img src = "https://github.com/user-attachments/assets/416a295c-0af3-45ed-b5b6-a3de1f01ad27" width = "200" heigh = "150"</td>
+    <td><img src = "https://github.com/user-attachments/assets/8757b28e-6196-41e0-99ee-64858a570d3a" width = "200" heigh = "150"</td>
+    <td></td>
   </tr>
 </table>
 
