@@ -16,6 +16,7 @@ class UItemBase;
 class AWeapon_Pistol;
 class AWeapon_ShotGun;
 class AWeaponBase;
+class UPlayerAnimInstance;
 
 UCLASS()
 class UE5_HORRORSGAME_API APlayerCharacter : public ABaseCharacter
@@ -53,6 +54,17 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	int KillCount;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsBossKill;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool FogSeal;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool DevilSeal;
+
+	FTimerHandle DeathTimer;
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
@@ -65,7 +77,7 @@ public:
 
 	AWeaponBase *GetCurrentWeapon()const { return CurrentWeapon; }
 
-	virtual void Die(float KillingDamage, struct FDamageEvent const &DamageEvent, AController *Killer, AActor *DamageCauser)override;
+	
 
 protected:
 	// ===========================================================
@@ -96,6 +108,9 @@ protected:
 	UPROPERTY()
 	AWeaponBase *LastWeapon;
 
+	UPROPERTY()
+	UPlayerAnimInstance *PlayerAnim;
+
 	UPROPERTY(EditAnywhere, Category = "Animation")
 	UAnimMontage *ShootPistolAnim;
 
@@ -104,6 +119,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Animation")
 	UAnimMontage *GunChangeAnim;
+
+	
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
@@ -133,12 +150,18 @@ protected:
 	
 	void SetupStimulusSource();
 
+	virtual void Die(float KillingDamage, struct FDamageEvent const &DamageEvent, AController *Killer, AActor *DamageCauser);
+
+	virtual float TakeDamage(float Damage, struct FDamageEvent const &DamageEvent, AController *EventInstigator, AActor *DamageCauser)override;
+
+	void DeathAnimationEnd();
+
 private:
 	// ===========================================================
 	// =                  Variable / Property					 =
 	// ===========================================================
-	
-
+	UPROPERTY(BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	bool bIsDead;
 
 	// ===========================================================
 	// =					  Functionary	   				     = 

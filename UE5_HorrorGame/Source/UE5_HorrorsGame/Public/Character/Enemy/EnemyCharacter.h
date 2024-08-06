@@ -11,6 +11,8 @@
 class UBehaviorTree;
 class HorrorsGameModeBase;
 class APlayerCharacter;
+class AProjectile;
+class UEnemyAnimInstance;
 
 UCLASS()
 class UE5_HORRORSGAME_API AEnemyCharacter : public ABaseCharacter, public IEnemyCombatInterface
@@ -24,6 +26,8 @@ public:
 	HorrorsGameModeBase *GameMode;
 
 	APlayerCharacter *Target;
+
+	UEnemyAnimInstance *EnemyAnim;
 
 	// ===========================================================
 	// =					  Functionary	   				     = 
@@ -42,6 +46,7 @@ public:
 	void AttackStart()const;
 	void AttackEnd()const;
 	void MeleeAttackWithSweepTrace();
+
 protected:
 	// ===========================================================
 	// =                  Variable / Property					 =
@@ -54,13 +59,18 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Item")
 	TSubclassOf<class APickUpItem> DropItemClass;
 
+
+
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
 
 	virtual void BeginPlay()override;
 	virtual void Tick(float DeltaTime)override;
-	virtual void Die(float KillingDamage, struct FDamageEvent const &DamageEvent, AController *Killer, AActor *DamageCauser) override;
+
+	virtual float TakeDamage(float Damage, struct FDamageEvent const &DamageEvent, AController *EventInstigator, AActor *DamageCauser)override;
+
+	virtual void Die(float KillingDamage, struct FDamageEvent const &DamageEvent, AController *Killer, AActor *DamageCauser);
 	void DeathAnimationEnd();
 private:
 	// ===========================================================
