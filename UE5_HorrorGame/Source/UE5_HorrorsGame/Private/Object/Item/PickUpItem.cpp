@@ -3,8 +3,11 @@
 
 #include "Object/Item/PickUpItem.h"
 #include "Components/SphereComponent.h"
-#include "Character/Player/PlayerCharacter.h"
+#include "Component/InventoryComponent.h"
 #include "Object/Item/ItemBase.h"
+#include "Character/Player/PlayerCharacter.h"
+#include "UI/HorrorsHUD.h"
+#include "UI/InGameHUD.h"
 
 APickUpItem::APickUpItem()
 {
@@ -30,12 +33,17 @@ void APickUpItem::BeginPlay()
 {
 	Super::BeginPlay();
 
-	InitializePickUp(UItemBase::StaticClass(), ItemAmount);
+	InitializePickUp(UItemBase::StaticClass());
+	HUD = Cast<AHorrorsHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
+	
+	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &APickUpItem::OnOverlapBegin);
+
+	CollisionSphere->OnComponentEndOverlap.AddDynamic(this, &APickUpItem::OnOverlapEnd);
 	// 데이터 테이블 바인딩
 	//ItemRow = ItemDataTable->FindRow<FItemData>(ItemRowHandle.RowName, "");
 }
 
-void APickUpItem::InitializePickUp(const TSubclassOf<UItemBase> BaseClass, const int32 InAmount)
+void APickUpItem::InitializePickUp(const TSubclassOf<UItemBase> BaseClass)
 {
 	if (ItemDataTable && !DesiredItemID.IsNone())
 	{
@@ -44,40 +52,12 @@ void APickUpItem::InitializePickUp(const TSubclassOf<UItemBase> BaseClass, const
 		ItemReference = NewObject<UItemBase>(this, BaseClass);
 		
 		ItemReference->ID = ItemData->ID;
+		ItemReference->Amount = ItemData->Amount;
 		ItemReference->ItemType = ItemData->ItemType;
-		ItemReference->NumericData = ItemData->NumericData;
 		ItemReference->TextData = ItemData->TextData;
 		ItemReference->AssetData = ItemData->AssetData;
 
-		InAmount <= 0 ? ItemReference->SetAmount(1) : ItemReference->SetAmount(InAmount);
-
 		ItemMesh->SetStaticMesh(ItemData->AssetData.Mesh);
-
-		UpdateInteractableData();
-	}
-}
-
-void APickUpItem::UpdateInteractableData()
-{
-	InstanceInteractable.InteractionType = EInteractionType::Pickup;
-	InstanceInteractable.Name = ItemReference->TextData.Name;
-	InstanceInteractable.Amount = ItemReference->Amount;
-	InteractableData = InstanceInteractable;
-}
-
-void APickUpItem::BeginFocus()
-{
-	if (ItemMesh)
-	{
-		ItemMesh->SetRenderCustomDepth(true);
-	}
-}
-
-void APickUpItem::EndFocus()
-{
-	if (ItemMesh)
-	{
-		ItemMesh->SetRenderCustomDepth(false);
 	}
 }
 
@@ -95,11 +75,36 @@ void APickUpItem::TakePickUp(APlayerCharacter *Taker)
 	{
 		if (ItemReference)
 		{
-			/*if (UInventory *PlayerInventory = Taker->GetInventory())
+			if (UInventoryComponent *PlayerInventory = Taker->GetInventory())
 			{
-				
-			}*/
+				PlayerInventory->AddItem(ItemReference);
+				Destroy();
+			}
 		}
+	}
+}
+
+void APickUpItem::OnOverlapBegin(UPrimitiveComponent *const OverlapComp, AActor *const OtherActor, UPrimitiveComponent *const OtherComponent, int const OtherBodyIndex, bool const FromSweep, FHitResult const &SweepResult)
+{
+	if (OtherActor == this)
+	{
+		return;
+	}
+	if (auto Character = Cast<APlayerCharacter>(OtherActor))
+	{
+		HUD->GetInGameHUDWidget()->ShowInteractUI();
+	}
+}
+
+void APickUpItem::OnOverlapEnd(UPrimitiveComponent *const OverlapComp, AActor *const OtherActor, UPrimitiveComponent *const OtherComponent, int const OtherBodyIndex)
+{
+	if (OtherActor == this)
+	{
+		return;
+	}
+	if (auto Character = Cast<APlayerCharacter>(OtherActor))
+	{
+		HUD->GetInGameHUDWidget()->HideInteractUI();
 	}
 }
 
@@ -123,27 +128,3 @@ void APickUpItem::PostEditChangeProperty(FPropertyChangedEvent &PropertyChangedE
 	}
 }
 
-
-void APickUpItem::BeginInteraction()
-{
-
-}
-
-void APickUpItem::EndInteraction()
-{
-
-}
-
-//void APickUpItem::Interact(APlayerCharacter* player)
-//{
-//	
-//	if (player)
-//	{
-//		if (ItemRow)
-//		{
-//			player->AddItem(ItemRow);
-//		}
-//	}
-//
-//	this->Destroy();
-//}
