@@ -8,10 +8,10 @@ https://github.com/user-attachments/assets/d6d4c018-d635-46a2-9d91-9d937efa383a
 
 핵심 기능
 -
-> - 데이터 테이블을 활용한 Item과 Tutorial 기능
+> - DataTable을 활용한 Item과 Tutorial 기능
 > - NPC의 상태별 행동패턴과 보스 NPC의 거리에 따른 공격 패턴
 > - HUD를 활용한 전체 UI 관리
-> - 액터 컴포넌트와 인터페이스를 활용한 Inventory 기능
+> - Actor Component와 Interface를 활용한 Inventory 기능
 
 
 기능 구현
