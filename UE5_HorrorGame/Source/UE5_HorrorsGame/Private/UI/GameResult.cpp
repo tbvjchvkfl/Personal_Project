@@ -8,41 +8,19 @@
 #include "Kismet/GameplayStatics.h"
 #include "UI/HorrorsHUD.h"
 
-void UGameResult::NativeConstruct()
+void UGameResult::SetResult(FString ResultText)
 {
-	FString WinString = FString::Printf(TEXT("You Win"));
-	FString LoseString = FString::Printf(TEXT("You Lose"));
-
-	auto *const Player = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-
-	HUD = Cast<AHorrorsHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
-
-	if (Player->GetCurHealth() <= 0)
-	{
-		ResultText->SetText(FText::FromString(LoseString));
-	}
-	else
-	{
-		ResultText->SetText(FText::FromString(WinString));
-	}
+	ResultTitleText->SetText(FText::FromString(ResultText));
 }
 
 void UGameResult::OnClickedRestartButton()
 {
+	HUD = Cast<AHorrorsHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
 	auto Controller = Cast<APlayerController>(GetOwningPlayer());
-	//auto *GameMode = Cast<AHorrorsGameModeBase>(GetOwningPlayer());
-	//UGameplayStatics::OpenLevel(GetWorld(), "TestLevel");
 	if (Controller)
 	{
 		Controller->RestartLevel();
 	}
 	HUD->HideResult();
-	//GameMode->ResetLevel();
 }
-
-//void UGameResult::OnClickedCancleButton()
-//{
-//	auto Controller = Cast<APlayerController>(GetOwningPlayer());
-//	Controller->EndPlay
-//}
 

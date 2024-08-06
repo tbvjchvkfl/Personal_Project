@@ -7,6 +7,8 @@
 #include "UI/GameResult.h"
 #include "UI/InteractionWidget.h"
 #include "UI/TutorialWidget.h"
+#include "UI/BossHealthBar.h"
+#include "UI/GameQuestUI.h"
 
 AHorrorsHUD::AHorrorsHUD()
 {
@@ -49,13 +51,14 @@ void AHorrorsHUD::ToggleMenu()
 	}
 }
 
-void AHorrorsHUD::ShowResult()
+void AHorrorsHUD::ShowResult(FString Text)
 {
 	if (GameResultWidget)
 	{
 		bIsShowingResult = true;
 		GameResultWidget->AddToViewport();
 		GameResultWidget->SetVisibility(ESlateVisibility::Visible);
+		GameResultWidget->SetResult(Text);
 		FInputModeUIOnly UIInputMode;
 		GetOwningPlayerController()->SetInputMode(UIInputMode);
 		GetOwningPlayerController()->SetShowMouseCursor(true);
@@ -101,5 +104,18 @@ void AHorrorsHUD::BeginPlay()
 		TutorialWidget = CreateWidget<UTutorialWidget>(GetWorld(), TutorialUI);
 		TutorialWidget->AddToViewport();
 		TutorialWidget->SetVisibility(ESlateVisibility::Collapsed);
+	}
+
+	if (BossHealthUI)
+	{
+		BossHealth = CreateWidget<UBossHealthBar>(GetWorld(), BossHealthUI);
+		BossHealth->AddToViewport();
+		BossHealth->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	if (QuestUI)
+	{
+		QuestUIWidget = CreateWidget<UGameQuestUI>(GetWorld(), QuestUI);
+		QuestUIWidget->AddToViewport();
+		QuestUIWidget->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }

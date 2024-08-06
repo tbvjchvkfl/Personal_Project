@@ -4,6 +4,8 @@
 #include "UI/InGameHUD.h"
 #include "UI/InteractionWidget.h"
 #include "UI/TutorialWidget.h"
+#include "UI/BossHealthBar.h"
+#include "UI/GameQuestUI.h"
 #include "Components/TextBlock.h"
 #include "Components/HorizontalBox.h"
 #include "Component/InventoryComponent.h"
@@ -34,6 +36,7 @@ void UInGameHUD::InitializeHUD() const
 	}
 	HideInteractUI();
 	CoinHorizon->SetVisibility(ESlateVisibility::Collapsed);
+	BossHealthBar->SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void UInGameHUD::SetAmmoCountText(int remain, int max) const
@@ -57,6 +60,7 @@ void UInGameHUD::ShowTutorialWidget(FString Text)
 {
 	TutorialWidget->SetTutorialText(Text);
 	TutorialWidget->SetVisibility(ESlateVisibility::Visible);
+	PlayAnimation(ShowTutorial);
 }
 
 void UInGameHUD::HideTutorialWidget()
@@ -64,4 +68,33 @@ void UInGameHUD::HideTutorialWidget()
 	FString NullString = "";
 	TutorialWidget->SetTutorialText(NullString);
 	TutorialWidget->SetVisibility(ESlateVisibility::Collapsed);
+	PlayAnimation(HideTutorial);
+}
+
+void UInGameHUD::ShowBossHealthBar()
+{
+	BossHealthBar->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UInGameHUD::SetBossHealthBar(ABossEnemyCharacter *Boss)
+{
+	BossHealthBar->InitializeHealthbar(Boss);
+}
+
+void UInGameHUD::HideBossHealthBar()
+{
+	BossHealthBar->SetVisibility(ESlateVisibility::Collapsed);
+}
+
+void UInGameHUD::ShowQuestWidget(FString UIText)
+{
+	QuestUIWidget->SetText(UIText);
+	QuestUIWidget->SetVisibility(ESlateVisibility::Visible);
+	PlayAnimation(ShowQuest);
+	GetWorld()->GetTimerManager().SetTimer(Timer, this, &UInGameHUD::HideQuestWidget, 5.0f, false);
+}
+
+void UInGameHUD::HideQuestWidget()
+{
+	QuestUIWidget->SetVisibility(ESlateVisibility::Collapsed);
 }

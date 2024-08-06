@@ -10,45 +10,51 @@
 #include "Data/ItemStruct.h"
 #include "Character/Player/PlayerCharacter.h"
 #include "Kismet/GameplayStatics.h"
-
+#include "Object/Item/ItemBase.h"
 
 void UInventorySlot::NativeConstruct()
 {
-	/*Super::NativeConstruct();
-	ItemNameText->SetText(FText::FromString(ItemData->TextData.Name));
-	ItemImage->SetBrushFromTexture(ItemData->AssetData.Icon);
+	Super::NativeConstruct();
+	ItemNameText->SetText(FText::FromString(ItemReference->TextData.Name));
+	ItemImage->SetBrushFromTexture(ItemReference->AssetData.Icon);
 	UseButton->OnClicked.AddDynamic(this, &UInventorySlot::UseItem);
-	MyPlayer = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));*/
+	MyPlayer = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 }
 
-void UInventorySlot::SetItemSlot(FItemData *ItemSlot)
+void UInventorySlot::NativeOnInitialized()
 {
-	/*ItemData = ItemSlot;*/
+	
+}
+
+//FReply UInventorySlot::NativeOnMouseButtonUp(const FGeometry &InGeometry, const FPointerEvent &InMouseEvent)
+//{
+//	return FReply();
+//}
+
+void UInventorySlot::NativeOnMouseLeave(const FPointerEvent &InMouseEvent)
+{
+	
 }
 
 void UInventorySlot::UseItem()
 {
-	/*switch (ItemData->ItemType)
+	switch (ItemReference->ItemType)
 	{
 		case EItemType::Consumable:
 			UseHealthPotion();
-			
 			break;
-
 		default:
 			break;
-	}*/
+	}
 }
 
-//float UInventorySlot::UseHealthPotion()
-//{
-//	auto Health = MyPlayer->GetCurHealth() + 20.0f;
-//	if (Health > 100.0f)
-//	{
-//		Health = 100.0f;
-//	}
-//	//ItemData->Amount -= 1;
-//	return MyPlayer->SetCurHealth(Health);
-//}
-
-
+float UInventorySlot::UseHealthPotion()
+{
+	auto Health = MyPlayer->GetCurHealth() + 20.0f;
+	if (Health > 100.0f)
+	{
+		Health = 100.0f;
+	}
+	ItemReference->Amount -= 1;
+	return MyPlayer->SetCurHealth(Health);
+}

@@ -7,6 +7,7 @@
 #include "Component/InventoryComponent.h"
 #include "Character/Player/PlayerCharacter.h"
 #include "UI/InventorySlot.h"
+#include "Object/Item/ItemBase.h"
 
 void UInventory::NativeOnInitialized()
 {
@@ -32,51 +33,24 @@ bool UInventory::NativeOnDrop(const FGeometry &InGeometry, const FDragDropEvent 
 void UInventory::NativeConstruct()
 {
 	Super::NativeConstruct();
-	/*Player = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));*/
-	//CoinText->SetText(FText::AsNumber(Player->GetPlayerCoin()));
 }
 
 void UInventory::RefreshInventory()
 {
 	if(InventoryComp && InventorySlotClass)
 	{
+		WrapBox->ClearChildren();
+
 		for (auto const& InventoryItem : InventoryComp->GetItemInventory())
 		{
 			auto ItemSlot = CreateWidget<UInventorySlot>(this, InventorySlotClass);
-			//ItemSlot->SetItemReference(InventoryComp);
+			ItemSlot->SetItemReference(InventoryItem);
 
 			WrapBox->AddChildToWrapBox(ItemSlot);
+			if (InventoryItem->Amount <= 0)
+			{
+				WrapBox->RemoveChild(ItemSlot);
+			}
 		}
 	}
 }
-
-//void UInventory::AddItemToInventory()
-//{
-//	if (Player)
-//	{
-//		InventoryItems = Player->GetInventoryItem();
-//		for (int i = 0; i < InventoryItems.Num(); i++)
-//		{
-//			if (InventoryClass)
-//			{
-//				SlotWidget = Cast<UInventorySlot>(CreateWidget(GetWorld(), InventoryClass));
-//				if (SlotWidget)
-//				{
-//					SlotWidget->SetItemSlot(InventoryItems[i]);
-//					WrapBox->AddChild(SlotWidget);
-//				}
-//			}
-//		}
-//	}
-//}
-
-//void UInventory::RemoveItem()
-//{
-//	for (int i = 0; i < InventoryItems.Num(); i++)
-//	{
-//		if (InventoryItems[i]->Amount < 1)
-//		{
-//			WrapBox->RemoveChild(SlotWidget);
-//		}
-//	}
-//}
