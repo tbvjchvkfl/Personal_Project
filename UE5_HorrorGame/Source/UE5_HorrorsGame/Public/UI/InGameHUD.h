@@ -12,6 +12,9 @@ class UInventoryComponent;
 class UWidgetAnimation;
 class UHorizontalBox;
 class UTutorialWidget;
+class UBossHealthBar;
+class ABossEnemyCharacter;
+class UGameQuestUI;
 
 UCLASS()
 class UE5_HORRORSGAME_API UInGameHUD : public UUserWidget
@@ -34,11 +37,31 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UInteractionWidget *InteractUI;
 
+	UPROPERTY(meta = (BindWidget))
+	UTutorialWidget *TutorialWidget;
+
+	UPROPERTY(meta = (BindWidget))
+	UGameQuestUI *QuestUIWidget;
+
+	UPROPERTY(meta = (BindWidget))
+	UBossHealthBar *BossHealthBar;
+
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
 	UWidgetAnimation *ShowCoinUI;
 
-	UPROPERTY(meta = (BindWidget))
-	UTutorialWidget *TutorialWidget;
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation *ShowTutorial;
+
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation *HideTutorial;
+
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation *ShowQuest;
+
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation *HideQuest;
+
+	FTimerHandle Timer;
 
 	// ===========================================================
 	// =					  Functionary	   				     = 
@@ -51,5 +74,11 @@ public:
 	void PlayCoinAnimation();
 	void ShowTutorialWidget(FString Text);
 	void HideTutorialWidget();
+	void ShowBossHealthBar();
+	void SetBossHealthBar(ABossEnemyCharacter *Boss);
+	void HideBossHealthBar();
+	UFUNCTION(BlueprintCallable)
+	void ShowQuestWidget(FString UIText);
+	void HideQuestWidget();
 };
 

@@ -11,6 +11,8 @@ class UInventory;
 class UGameResult;
 class UInteractionWidget;
 class UTutorialWidget;
+class UBossHealthBar;
+class UGameQuestUI;
 
 UCLASS()
 class UE5_HORRORSGAME_API AHorrorsHUD : public AHUD
@@ -33,6 +35,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
 	TSubclassOf<UTutorialWidget> TutorialUI;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
+	TSubclassOf<UBossHealthBar> BossHealthUI;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
+	TSubclassOf<UGameQuestUI> QuestUI;
+
 	bool bIsMenuVisible;
 	bool bIsShowingResult;
 	// ===========================================================
@@ -45,10 +53,11 @@ public:
 
 	void ToggleMenu();
 
-	void ShowResult();
+	void ShowResult(FString Text);
 
 	void HideResult();
 
+	UFUNCTION(BlueprintCallable)
 	UInGameHUD* GetInGameHUDWidget() { return InGameHUDWidget; }
 
 protected:
@@ -66,6 +75,12 @@ protected:
 
 	UPROPERTY()
 	UTutorialWidget *TutorialWidget;
+
+	UPROPERTY()
+	UBossHealthBar *BossHealth;
+
+	UPROPERTY()
+	UGameQuestUI *QuestUIWidget;
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================

@@ -11,7 +11,7 @@ class UImage;
 class UButton;
 class APlayerCharacter;
 class UInventory;
-struct FItemData;
+class UItemBase;
 
 UCLASS()
 class UE5_HORRORSGAME_API UInventorySlot : public UUserWidget
@@ -30,7 +30,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UButton *UseButton;
 
-	FItemData *ItemData;
+	UItemBase *ItemRef;
 
 	APlayerCharacter *MyPlayer;
 
@@ -39,24 +39,26 @@ public:
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
-	void SetItemSlot(FItemData* ItemSlot);
-
-	UFUNCTION(BlueprintCallable)
+	FORCEINLINE UItemBase* GetItemReference() const { return ItemReference; };
+	FORCEINLINE void SetItemReference(UItemBase *ItemIn) { ItemReference = ItemIn; };
+	
+	UFUNCTION()
 	void UseItem();
-	
-	
-
 
 protected:
 	// ===========================================================
 	// =                  Variable / Property					 =
 	// ===========================================================
-
+	UPROPERTY(VisibleAnywhere, Category = "InventorySlot")
+	UItemBase *ItemReference;
 
 
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
-	//float UseHealthPotion();
 	virtual void NativeConstruct()override;
+	virtual void NativeOnInitialized() override;
+	//virtual FReply NativeOnMouseButtonUp(const FGeometry &InGeometry, const FPointerEvent &InMouseEvent)override;
+	virtual void NativeOnMouseLeave(const FPointerEvent &InMouseEvent)override;
+	float UseHealthPotion();
 };

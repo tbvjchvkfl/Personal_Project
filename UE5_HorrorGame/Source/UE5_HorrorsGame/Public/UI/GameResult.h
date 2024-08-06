@@ -26,14 +26,17 @@ public:
 	UButton *Cancle;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Button", meta = (BindWidget))
-	UTextBlock *ResultText;
+	UTextBlock *ResultTitleText;
 	class AHorrorsHUD *HUD;
-	virtual void NativeConstruct()override;
+	
+	class APlayerCharacter *Player;
 
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
+
+	void SetResult(FString ResultText);
+
 	UFUNCTION(BlueprintCallable)
 	void OnClickedRestartButton();
-	//void OnClickedCancleButton();
 };

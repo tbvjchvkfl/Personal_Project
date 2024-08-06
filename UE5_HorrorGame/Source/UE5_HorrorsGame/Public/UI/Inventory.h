@@ -8,8 +8,7 @@
 
 class UWrapBox;
 class UTextBlock;
-//class APlayerCharacter;
-//class APickUpItem;
+class APlayerCharacter;
 class UInventorySlot;
 class UInventoryComponent;
 
@@ -25,9 +24,6 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UWrapBox *WrapBox;
 
-	/*UPROPERTY(EditAnywhere, Category = "ItemSlot")
-	TSubclassOf<UUserWidget> InventoryClass;*/
-
 	UPROPERTY()
 	UInventoryComponent *InventoryComp;
 
@@ -36,23 +32,12 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UInventorySlot> InventorySlotClass;
-	
-	//FItemData *ItemReference;
-
-	//TArray<FItemData*> InventoryItems;
-
-	//APickUpItem *Items;
 
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
-	virtual void NativeConstruct()override;
-
 	UFUNCTION(Category = "Add to Item")
 	void RefreshInventory();
-
-	//UFUNCTION(BlueprintCallable)
-	//void RemoveItem();
 	
 protected:
 	// ===========================================================
@@ -64,7 +49,7 @@ protected:
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
-
+	virtual void NativeConstruct()override;
 	virtual void NativeOnInitialized() override;
 	virtual bool NativeOnDrop(const FGeometry &InGeometry, const FDragDropEvent &InDragDropEvent, UDragDropOperation *InOperation) override;
 };
