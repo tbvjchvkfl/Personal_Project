@@ -3,59 +3,75 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h" 
-#include "Data/TutorialStruct.h"
-#include "Engine/DataTable.h"
-#include "TutorialTrigger.generated.h"
+#include "GameFramework/Actor.h"
+#include "Interface/InteractionInterface.h"
+#include "Data/ItemStruct.h"
+#include "PickUpItem.generated.h"
 
-class UBoxComponent;
-class UTutorialBase;
-class UTutorialWidget;
+class UStaticMeshComponent;
+class USphereComponent;
+class APlayerCharacter;
+class UDataTable;
+class UItemBase;
+class AHorrorsHUD;
 
 UCLASS()
-class UE5_HORRORSGAME_API ATutorialTrigger : public AActor
+class UE5_HORRORSGAME_API APickUpItem : public AActor, public IInteractionInterface
 {
 	GENERATED_BODY()
-	
+
 public:	
 	// ===========================================================
 	// =                  Variable / Property					 =
 	// ===========================================================
-	UPROPERTY(VisibleAnywhere, Category = "TutoComp")
-	UBoxComponent *CollisionBox;
+	AHorrorsHUD *HUD;
 
-	UPROPERTY(EditAnywhere, Category = "TutoComp")
-	UDataTable *TutorialDataTable;
-
-	UPROPERTY(EditAnywhere, Category = "TutoComp")
-	FName DesiredTutoName;
-
-	UPROPERTY(VisibleAnywhere, Category = "TutoComp")
-	UTutorialBase *TutorialReference;
 
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
-	ATutorialTrigger();
+	APickUpItem();
+	FORCEINLINE UItemBase *GetItemData() { return ItemReference; }
+
+	
 
 protected:
 	// ===========================================================
 	// =                  Variable / Property					 =
 	// ===========================================================
+	UPROPERTY(EditAnywhere, Category = "ItemComp")
+	UStaticMeshComponent *ItemMesh;
 
-	AHorrorsHUD *HUD;
+	UPROPERTY(VisibleAnywhere, Category = "ItemComp")
+	USphereComponent *CollisionSphere;
+
+	UPROPERTY(EditAnywhere, Category = "ItemComp")
+	UDataTable *ItemDataTable;
+
+	UPROPERTY(EditAnywhere, Category = "ItemComp")
+	FName DesiredItemID;
+
+	UPROPERTY(VisibleAnywhere, Category = "ItemComp")
+	UItemBase *ItemReference;
 
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
-	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
-
-	void InitializeTutorial(TSubclassOf<UTutorialBase> BaseClass);
+	virtual void BeginPlay()override;
+	virtual void Interaction(APlayerCharacter *Player)override;
+	
+	void InitializePickUp(const TSubclassOf<UItemBase> BaseClass);
+	void TakePickUp(APlayerCharacter *Taker);
 
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent *const OverlapComp, AActor *const OtherActor, UPrimitiveComponent *const OtherComponent, int const OtherBodyIndex, bool const FromSweep, FHitResult const &SweepResult);
+
 	UFUNCTION()
 	void OnOverlapEnd(UPrimitiveComponent *const OverlapComp, AActor *const OtherActor, UPrimitiveComponent *const OtherComponent, int const OtherBodyIndex);
 
+
+#if WITH_EDITOR
+	// 에디터에서 마지막으로 조정한 항목에 대한 참조를 저장
+	virtual void PostEditChangeProperty(FPropertyChangedEvent &PropertyChangedEvent) override;
+#endif
 };

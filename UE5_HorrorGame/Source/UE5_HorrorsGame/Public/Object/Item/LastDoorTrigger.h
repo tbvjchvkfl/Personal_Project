@@ -4,17 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Interface/InteractionInterface.h"
-#include "InteractionDoor.generated.h"
-
-class USphereComponent;
-class UStaticMeshComponent;
-class UBoxComponent;
-class ALastDoorTrigger;
-class AHorrorsHUD;
+#include "LastDoorTrigger.generated.h"
 
 UCLASS()
-class UE5_HORRORSGAME_API AInteractionDoor : public AActor, public IInteractionInterface
+class UE5_HORRORSGAME_API ALastDoorTrigger : public AActor
 {
 	GENERATED_BODY()
 	
@@ -22,46 +15,35 @@ public:
 	// ===========================================================
 	// =                  Variable / Property					 =
 	// ===========================================================
+	UPROPERTY()
+	bool EnableDoorInteraction;
 
-	UPROPERTY(EditAnywhere, Category = "Mesh")
-	UStaticMeshComponent *LeftDoor;
-
-	UPROPERTY(EditAnywhere, Category = "Mesh")
-	UStaticMeshComponent *RightDoor;
-
-	UPROPERTY(EditAnywhere, Category = "Trigger")
-	TSubclassOf<ALastDoorTrigger> DoorTriggerClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool bIsInteract;
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
-	AInteractionDoor();
+	ALastDoorTrigger();
 
 protected:
 	// ===========================================================
 	// =                  Variable / Property					 =
 	// ===========================================================
+	UPROPERTY()
+	class APlayerCharacter *Player;
 
-	UPROPERTY(EditAnywhere, Category = "ItemComp")
-	UBoxComponent *CollisionBox;
+	UPROPERTY(EditAnywhere, meta = (AllowPrivateAccess = "true"))
+	class UBoxComponent *CollisionBox;
 
-	ALastDoorTrigger *DoorTrigger;
-
-	AHorrorsHUD *HUD;
-
-	FTimerHandle Timerhandle;
-	float LeftRotRate;
-	float RightRotRate;
+	class AHorrorsHUD *HUD;
 
 	// ===========================================================
 	// =					  Functionary	   				     = 
 	// ===========================================================
-	virtual void Interaction(class APlayerCharacter *Player);
-	void OpenDoor();
-
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION()
+	virtual void OnOverlapBegin(UPrimitiveComponent *const OverlapComp, AActor *const OtherActor, UPrimitiveComponent *const OtherComponent, int const OtherBodyIndex, bool const FromSweep, FHitResult const &SweepResult);
+
+	UFUNCTION()
+	virtual void OnOverlapEnd(UPrimitiveComponent *const OverlapComp, AActor *const OtherActor, UPrimitiveComponent *const OtherComponent, int const OtherBodyIndex);
 };
