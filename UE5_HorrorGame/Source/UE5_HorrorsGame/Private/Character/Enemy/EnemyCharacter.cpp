@@ -10,6 +10,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "UI/HorrorsHUD.h"
 #include "Object/Item/PickUpItem.h"
+#include "Anim/EnemyAnimInstance.h"
 
 AEnemyCharacter::AEnemyCharacter()
 {
@@ -88,6 +89,8 @@ void AEnemyCharacter::MeleeAttackWithSweepTrace()
 	}
 }
 
+
+
 void AEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -96,15 +99,12 @@ void AEnemyCharacter::BeginPlay()
 	//HandCollisionBox->OnComponentEndOverlap.AddDynamic(this, &AEnemyCharacter::OnAttackOverlapEnd);
 	HUD = Cast<AHorrorsHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
 	Target = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	EnemyAnim = Cast<UEnemyAnimInstance>(GetMesh()->GetAnimInstance());
 }
 
 void AEnemyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (Target->KillCount >= 3)
-	{
-		//HUD->ShowResult();
-	}
 }
 
 void AEnemyCharacter::Die(float KillingDamage, FDamageEvent const &DamageEvent, AController *Killer, AActor *DamageCauser)
@@ -126,10 +126,10 @@ void AEnemyCharacter::Die(float KillingDamage, FDamageEvent const &DamageEvent, 
 	{
 		Controller->UnPossess();
 	}
-	float DeathAnimDuration = PlayAnimMontage(DeathMontage);
+	PlayAnimMontage(DeathMontage);
 
 	FTimerHandle TimerHandle;
-	GetWorldTimerManager().SetTimer(TimerHandle, this, &AEnemyCharacter::DeathAnimationEnd, DeathAnimDuration, false);
+	GetWorldTimerManager().SetTimer(TimerHandle, this, &AEnemyCharacter::DeathAnimationEnd, PlayAnimMontage(DeathMontage), false);
 	Target->KillCount++;
 	
 }
@@ -138,7 +138,26 @@ void AEnemyCharacter::DeathAnimationEnd()
 {
 	auto Loc = GetActorLocation() + FVector(0.0f, 0.0f, -80.0f);
 	GetWorld()->SpawnActor<APickUpItem>(DropItemClass, Loc, GetActorRotation());
+	this->SetActorHiddenInGame(true);
 	this->Destroy();
+}
+
+float AEnemyCharacter::TakeDamage(float Damage, FDamageEvent const &DamageEvent, AController *EventInstigator, AActor *DamageCauser)
+{
+	const float CurrentDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+
+	CurHealth -= CurrentDamage;
+	if (CurHealth <= 0)
+	{
+		EnemyAnim->CheckHitAnim();
+		Die(CurrentDamage, DamageEvent, EventInstigator, DamageCauser);
+	}
+	else
+	{
+		EnemyAnim->HitAnim();
+	}
+
+	return CurrentDamage;
 }
 
 void AEnemyCharacter::OnAttackOverlapBegin(UPrimitiveComponent *const OverlapComp, AActor *const OtherActor, UPrimitiveComponent *const OtherComponent, int const OtherBodyIndex, bool const FromSweep, FHitResult const &SweepResult)

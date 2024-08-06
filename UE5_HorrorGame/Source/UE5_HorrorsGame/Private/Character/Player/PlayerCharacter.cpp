@@ -13,6 +13,7 @@
 #include "Armor/Weapon_ShotGun.h"
 #include "UI/HorrorsHUD.h"
 #include "UI/InGameHUD.h"
+#include "Anim/PlayerAnimInstance.h"
 #include "Component/InventoryComponent.h"
 #include "Object/Item/PickUpItem.h"
 #include "Object/InteractionDoor.h"
@@ -20,8 +21,10 @@
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
-APlayerCharacter::APlayerCharacter() : KillCount(0), InteractionCheckDistance(200.0f)
+APlayerCharacter::APlayerCharacter() : KillCount(0), InteractionCheckDistance(200.0f), bIsBossKill(false)
 {
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>("CameraBoom");
 	CameraBoom->SetupAttachment(RootComponent);
@@ -46,6 +49,7 @@ APlayerCharacter::APlayerCharacter() : KillCount(0), InteractionCheckDistance(20
 
 	MaxHealth = 100.0f;
 	CurHealth = MaxHealth;
+	bIsDead = false;
 }
 
 void APlayerCharacter::Tick(float DeltaTime)
@@ -69,6 +73,12 @@ void APlayerCharacter::Tick(float DeltaTime)
 		if (CurrentWeapon)
 		{
 			HUD->GetInGameHUDWidget()->SetAmmoCountText(CurrentWeapon->GetCurAmmo(), CurrentWeapon->GetMaxAmmo());
+		}
+	}
+	{
+		if (CurHealth <= 0)
+		{
+			bIsDead = true;
 		}
 	}
 }
@@ -107,6 +117,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputCom
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+	PlayerAnim = Cast<UPlayerAnimInstance>(GetMesh()->GetAnimInstance());
 	HUD = Cast<AHorrorsHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
 	for (auto WeaponType : WeaponTypes)
 	{
@@ -116,6 +127,10 @@ void APlayerCharacter::BeginPlay()
 	UpdateCurrentWeaponVisibility();
 	HUD->GetInGameHUDWidget()->InitializeHUD();
 	HUD->GetInGameHUDWidget()->HideTutorialWidget();
+	HUD->GetInGameHUDWidget()->HideQuestWidget();
+
+	FogSeal = true;
+	DevilSeal = true;
 }
 
 void APlayerCharacter::MoveForward(float Value)
@@ -291,8 +306,50 @@ void APlayerCharacter::SetupStimulusSource()
 
 void APlayerCharacter::Die(float KillingDamage, FDamageEvent const &DamageEvent, AController *Killer, AActor *DamageCauser)
 {
-	HUD->ShowResult();
+	CurHealth = FMath::Min(0, CurHealth);
+	if (GetCapsuleComponent())
+	{
+		GetCapsuleComponent()->BodyInstance.SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		GetCapsuleComponent()->BodyInstance.SetResponseToChannel(ECC_Pawn, ECR_Ignore);
+		GetCapsuleComponent()->BodyInstance.SetResponseToChannel(ECC_PhysicsBody, ECR_Ignore);
+	}
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->StopMovementImmediately();
+		GetCharacterMovement()->DisableMovement();
+	}
+	if (Controller)
+	{
+		Controller->UnPossess();
+	}
+	PlayAnimMontage(DeathMontage);
+	GetWorldTimerManager().SetTimer(DeathTimer, this, &APlayerCharacter::DeathAnimationEnd, PlayAnimMontage(DeathMontage), false);
 }
+
+void APlayerCharacter::DeathAnimationEnd()
+{
+	FString DieText = FString::Printf(TEXT("You Die"));
+	HUD->ShowResult(DieText);
+}
+
+float APlayerCharacter::TakeDamage(float Damage, FDamageEvent const &DamageEvent, AController *EventInstigator, AActor *DamageCauser)
+{
+	const float CurrentDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+
+	CurHealth -= CurrentDamage;
+	if (CurHealth <= 0)
+	{
+		PlayerAnim->CheckHitAnim();
+		Die(CurrentDamage, DamageEvent, EventInstigator, DamageCauser);
+	}
+	else
+	{
+		PlayerAnim->HitAnim();
+	}
+
+	return CurrentDamage;
+}
+
 
 void APlayerCharacter::WeaponChangePistol()
 {
