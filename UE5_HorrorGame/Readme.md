@@ -27,10 +27,10 @@ https://github.com/user-attachments/assets/d6d4c018-d635-46a2-9d91-9d937efa383a
     <th>사격</th>
   </tr>
   <tr>
-    <td><img src = "https://github.com/user-attachments/assets/91103ddd-e20c-4e3c-9ce7-7319a0aff2a1" width = "200" heigh = "150"></td>
-    <td><img src = "https://github.com/user-attachments/assets/4ce3b003-bc7c-4c06-9191-eb704d837e2d" width = "200" heigh = "150"></td>
-    <td><img src = "https://github.com/user-attachments/assets/4784e008-c1af-4b22-b247-5a2bfbb7f190" width = "200" heigh = "150"</td>
-    <td><img src = "https://github.com/user-attachments/assets/5a6e2e3d-d7d8-4e3a-84d0-26b2e2c88ff8" width = "200" heigh = "150"</td>
+    <td><img src = "https://github.com/user-attachments/assets/1af7edfc-939b-41b0-afa7-d874ea87da34" width = "200" heigh = "150"></td>
+    <td><img src = "https://github.com/user-attachments/assets/1d0033b9-33a4-40e3-8c9f-0de0a14c8903" width = "200" heigh = "150"></td>
+    <td><img src = "https://github.com/user-attachments/assets/8b5355f4-b95a-45a2-a6ee-24bdd15bc133" width = "200" heigh = "150"</td>
+    <td><img src = "https://github.com/user-attachments/assets/6dd322c9-5d44-4b05-8ec6-423c6972ab4c" width = "200" heigh = "150"</td>
   </tr>
    <tr>
     <th>재장전</th>
@@ -41,8 +41,8 @@ https://github.com/user-attachments/assets/d6d4c018-d635-46a2-9d91-9d937efa383a
   <tr>
     <td><img src = "https://github.com/user-attachments/assets/7c31e4ec-1c07-4263-8699-792856c3c2da" width = "200" heigh = "150"</td>
     <td><img src = "https://github.com/user-attachments/assets/087e7fa1-5028-4b81-96e8-8ad277d1deda" width = "200" heigh = "150"</td>
-    <td><img src = "https://github.com/user-attachments/assets/b0c0e1b6-f141-4bb7-8377-4547c254d54d" width = "200" heigh = "150"</td>
-    <td><img src = "https://github.com/user-attachments/assets/971a2f92-b9dd-4d46-bf81-2f0f503cefc7" width = "200" heigh = "150"</td>
+    <td><img src = "https://github.com/user-attachments/assets/0903da17-99f3-4dcf-98b3-124d17400f14" width = "200" heigh = "150"</td>
+    <td><img src = "https://github.com/user-attachments/assets/ff23c1b4-712b-4bc5-a306-0fe5048c75f4" width = "200" heigh = "150"</td>
   </tr>
    <tr>
     <th>히트 리액션과 원형 체력바</th>
