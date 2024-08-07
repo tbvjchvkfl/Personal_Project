@@ -4,7 +4,7 @@ Horror's Game
 
 플레이 영상
 -
-https://github.com/user-attachments/assets/d6d4c018-d635-46a2-9d91-9d937efa383a
+https://github.com/user-attachments/assets/f5c660a7-af4e-4ae2-80ee-15186c0162e6
 
 핵심 기능
 -
