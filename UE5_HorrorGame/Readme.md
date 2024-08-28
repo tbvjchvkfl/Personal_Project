@@ -73,8 +73,10 @@ https://github.com/user-attachments/assets/f5c660a7-af4e-4ae2-80ee-15186c0162e6
 기능 설명
 -
 
-> - ### 이동 / 달리기 ###
-> - 
+> ### 이동 / 달리기 ###
+> - 코드
+
+> ### 조준 / 사격 ###
 
 시행 착오
 -
