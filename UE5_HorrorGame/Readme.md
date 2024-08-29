@@ -74,9 +74,263 @@ https://github.com/user-attachments/assets/f5c660a7-af4e-4ae2-80ee-15186c0162e6
 -
 
 > ### 이동 / 달리기 ###
-> - 코드
+<pre>
+  <code>
+void APlayerCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	PlayerInputComponent->BindAxis("MoveForward", this, &APlayerCharacter::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerCharacter::MoveRight);
+	PlayerInputComponent->BindAxis("TurnUp", this, &APlayerCharacter::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("TurnRight", this, &APlayerCharacter::AddControllerYawInput);
+}
+
+void APlayerCharacter::MoveForward(float Value)
+{
+	FRotator NewRotation(0, Controller->GetControlRotation().Yaw, 0);
+	FVector NewDirection = FRotationMatrix(NewRotation).GetUnitAxis(EAxis::X);
+	AddMovementInput(NewDirection, Value);
+}
+
+void APlayerCharacter::MoveRight(float Value)
+{
+	FRotator NewRotation(0, Controller->GetControlRotation().Yaw, 0);
+	FVector NewDirection = FRotationMatrix(NewRotation).GetUnitAxis(EAxis::Y);
+	AddMovementInput(NewDirection, Value);
+}
+  </code>
+</pre>
+> 이동을 위한 코드는 PlayerController의 Z축 회전값(Yaw의 회전값)을 가져와서 FRotationMatrix().GetUnitAxis함수를 사용하여 X와 Y축의 단위 벡터를 구한 후 AddMovementInput함수에 각 값을 넣어주어 축 입력값에 의해 각 축의 방향으로 위치를 업데이트 할 수 있게 해주었습니다.
+> 그리고, 이를 MoveForward와 MoveRight라는 함수로 묶어 UInputComponent의 BindAxis함수에 연결해주었습니다.
+<pre>
+  <code>
+void APlayerCharacter::StartRunning()
+{
+	if (!bAimming)
+	{
+		bRunning = true;
+		GetCharacterMovement()->MaxWalkSpeed = 500.f;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+		bUseControllerRotationYaw = false;
+	}
+}
+
+void APlayerCharacter::EndRunning()
+{
+	bRunning = false;
+	GetCharacterMovement()->MaxWalkSpeed = 200.f;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	bUseControllerRotationYaw = true;
+}
+  </code>
+</pre>
+> 달리기의 경우 bool 타입의 bRunning변수를 추가하여 GetCharacterMovement()->MaxWalkSpeed 값을 변경해주고, OOO변수의 값에 따라 bUseControllerRotationYaw 값과 GetCharacterMovement()->bOrientRotationToMovement의 값을 변경해주어 걷기와 달리기 상태에 따라 카메라 회전과 캐릭터의 회전이 달라질 수 있게 구현했습니다.
 
 > ### 조준 / 사격 ###
+
+<pre>
+  <code>
+// PlayerCharacter.cpp
+void APlayerCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	
+		if(bAimming)
+		{
+			ZoomFactor += DeltaTime / 0.2f;
+		}
+		else
+		{
+			ZoomFactor -= DeltaTime / 0.2f;
+		}
+
+		ZoomFactor = FMath::Clamp<float>(ZoomFactor, 0.0f, 1.0f);
+		FollowCamera->FieldOfView = FMath::Lerp<float>(90.0f, 60.0f, ZoomFactor);
+		CameraBoom->TargetArmLength = FMath::Lerp<float>(200.0f, 100.0f, ZoomFactor);
+}
+
+void APlayerCharacter::StartAimming()
+{
+	bAimming = true;
+	GetCharacterMovement()->MaxWalkSpeed = 150.0f;
+}
+
+void APlayerCharacter::EndAimming()
+{
+	bAimming = false;
+	GetCharacterMovement()->MaxWalkSpeed = 200.0f;
+}
+  </code>
+</pre>
+> 조준 기능은 달리기와 마찬가지로 bAimming이라는 변수를 추가하여 캐릭터의 상태를 만들어주었으며, 애님 블루프린트에서 AimOffset을 적용시켜 카메라 회전에 따라 팔의 위치가 부드럽게 변경될 수 있게 구현했습니다.
+
+<pre>
+  <code>
+void APlayerCharacter::StartShoot()
+{
+	if (bAimming && !bReloading)
+	{
+		if (CurrentWeapon)
+		{
+			if (CurrentWeapon == WeaponInventory[0])
+			{
+				PlayAnimMontage(ShootPistolAnim);
+			}
+			if (CurrentWeapon == WeaponInventory[1])
+			{
+				PlayAnimMontage(ShootShotGunAnim);
+			}
+			CurrentWeapon->StartShoot(this);
+		}
+		else
+		{
+			return;
+		}
+	}
+}
+  </code>
+</pre>
+
+> 사격 기능의 경우 AWeaponBase* CurrentWeapon 변수에 TArray<WeaponBase*> WeaponInventory에 담겨져있는 값들 중 CurrentWeapon이 가리키는 값에 있는 StartShoot함수를 실행시켜주고 해당 값의 사격 애님몽타주를 실행시켜주었습니다.
+> 실제 사격 인터렉션은 무기로 사용할 AWeaponBase라는 액터 클래스를 만들고 이를 상속받아 AWeapon_Pistol과 AWeapon_ShotGun 클래스를 만들어 상속 구조로 구현했습니다.
+<pre>
+  <code>
+
+#include "Armor/WeaponBase.h"
+#include "Components/SkeletalMeshComponent.h"
+
+AWeaponBase::AWeaponBase()
+{
+	PrimaryActorTick.bCanEverTick = true;
+	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>("WeaponMesh");
+	WeaponMesh->SetupAttachment(RootComponent);
+}
+
+void AWeaponBase::DecreaseAmmoCount()
+{
+	--CurAmmoCount;
+	if (ShowUIDelegate.IsBound())
+	{
+		ShowUIDelegate.Broadcast();
+	}
+}
+
+void AWeaponBase::ResetAmmoCount()
+{
+	CurAmmoCount = MaxAmmoCount;
+	if (ShowUIDelegate.IsBound())
+	{
+		ShowUIDelegate.Broadcast();
+	}
+}
+
+  </code>
+</pre>
+
+<pre>
+  <Code>
+#include "Armor/Weapon_Pistol.h"
+#include "Character/Player/PlayerCharacter.h"
+#include "Character/Enemy/EnemyCharacter.h"
+#include "Character/Enemy/BossEnemyCharacter.h"
+#include "Camera/CameraComponent.h"
+#include "Kismet/GameplayStatics.h"
+
+AWeapon_Pistol::AWeapon_Pistol()
+{
+	MaxAmmoCount = 15.0f;
+	CurAmmoCount = MaxAmmoCount;
+	ReloadingDelayTime = 3.0f;
+	TraceDistance = 15000.0f;
+	AttackRate = 20.0f;
+}
+
+void AWeapon_Pistol::StartShoot(TWeakObjectPtr<APlayerCharacter> owner)
+{
+	auto Character = owner.Get();
+
+	if (Character)
+	{
+		switch (FireType)
+		{
+			case EFireType::EF_LineTrace:
+			{
+				FireWithLineTrace(Character);
+				SpawnEffect();
+			}
+			break;
+
+			case EFireType::EF_Projectile:
+				break;
+		}
+	}
+}
+
+void AWeapon_Pistol::Reload()
+{
+	ResetAmmoCount();
+}
+
+void AWeapon_Pistol::FireWithLineTrace(TWeakObjectPtr<APlayerCharacter> owner)
+{
+	auto Character = owner.Get();
+
+	if (Character)
+	{
+		AController *ownerController = Character->GetController();
+
+		if (ownerController)
+		{
+			FVector StartTrace = WeaponMesh->GetSocketLocation("FirePoint");
+			FVector EndTrace = StartTrace + Character->FollowCamera->GetForwardVector() * TraceDistance;
+
+			FCollisionQueryParams CollisionParam;
+			CollisionParam.AddIgnoredActor(this);
+
+			FHitResult HitTrace;
+
+			if (GetWorld()->LineTraceSingleByChannel(HitTrace, StartTrace, EndTrace, ECC_GameTraceChannel3, CollisionParam))
+			{
+				FRotator Rotation;
+				FVector ShotDirection = -Rotation.Vector();
+
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Impact, HitTrace.Location, ShotDirection.Rotation());
+
+				if (HitTrace.bBlockingHit)
+				{
+					if (auto *NPC = Cast<AEnemyCharacter>(HitTrace.GetActor()))
+					{
+						UGameplayStatics::ApplyDamage(NPC, 20.0f, NULL, this, UDamageType::StaticClass());
+					}
+					if (auto Boss = Cast<ABossEnemyCharacter>(HitTrace.GetActor()))
+					{
+						UGameplayStatics::ApplyDamage(Boss, 20.0f, NULL, this, UDamageType::StaticClass());
+					}
+				}
+			}
+			
+			DecreaseAmmoCount();
+
+			if (CurAmmoCount == 0)
+			{
+				Character->StartReload();
+			}
+		}
+	}
+}
+
+void AWeapon_Pistol::SpawnEffect()
+{
+	UGameplayStatics::SpawnEmitterAttached(MuzzleFlash, WeaponMesh, TEXT("FirePoint"));
+	UGameplayStatics::SpawnSoundAttached(MuzzleSound, WeaponMesh, TEXT("FirePoint"));
+}
+  </Code>
+</pre>
+
+> - 각 무기마다 공통적으로 사용해야하는 기능은 부모 클래스인 AWeaponBase에 구현하여 자식클래스들이 모두 사용할 수 있게 하였고, 실제 총알이 발사되는 함수는 GetWorld()->LineTraceSingleByChannel()함수를 사용하여 구현하였습니다.
+> - NPC와의 인터렉션은 HitResult.bBlockingHit 변수를 사용하여 정해진 ACharacter타입과의 충돌을 체크하고 충돌했다면 UGameplayStatic::ApllyDamage함수를 사용하여 임의의 값을 전달해주는 방식으로 구현했습니다.
+
 
 시행 착오
 -
