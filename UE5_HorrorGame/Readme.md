@@ -6,12 +6,7 @@ Horror's Game
 -
 https://github.com/user-attachments/assets/f5c660a7-af4e-4ae2-80ee-15186c0162e6
 
-핵심 기능
--
-> - DataTable을 활용한 Item과 Tutorial 기능
-> - NPC의 상태별 행동패턴과 보스 NPC의 거리에 따른 공격 패턴
-> - HUD를 활용한 전체 UI 관리
-> - Actor Component와 Interface를 활용한 Inventory 기능
+
 
 
 기능 구현
@@ -70,10 +65,16 @@ https://github.com/user-attachments/assets/f5c660a7-af4e-4ae2-80ee-15186c0162e6
   </tr>
 </table>
 
-기능 설명
+핵심 기능
 -
+> - DataTable을 활용한 Item과 Tutorial 기능
+> - NPC의 상태별 행동패턴과 보스 NPC의 거리에 따른 공격 패턴
+> - HUD를 활용한 전체 UI 관리
+> - Actor Component와 Interface를 활용한 Inventory 기능
 
-> ### 이동 / 달리기 ###
+핵심 기능 설명
+-
+> ### DataTable을 활용한 Item과 Tutorial 기능 ###
 <pre>
   <code>
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputComponent)
