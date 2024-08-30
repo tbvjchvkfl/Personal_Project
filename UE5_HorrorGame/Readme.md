@@ -326,7 +326,7 @@ void ATutorialTrigger::InitializeTutorial(TSubclassOf<UTutorialBase> BaseClass)
   </code>
 </pre>
 > ### Actor Component와 Interface를 활용한 Inventory 기능 ###
-> - ㅁㄴㅇㄹ
+> - Inventory기능을 구현할 때, Unreal Interface와 Actor Component를 사용해서 코드와 기능의 확장성을 고려해보았습니다.
 
 <pre>
   <code>
