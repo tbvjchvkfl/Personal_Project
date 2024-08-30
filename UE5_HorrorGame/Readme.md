@@ -9,7 +9,7 @@ https://github.com/user-attachments/assets/f5c660a7-af4e-4ae2-80ee-15186c0162e6
 
 
 
-기능 구현
+전체 기능 구현
 -
 <table>
   <tr>
@@ -75,96 +75,258 @@ https://github.com/user-attachments/assets/f5c660a7-af4e-4ae2-80ee-15186c0162e6
 핵심 기능 설명
 -
 > ### DataTable을 활용한 Item과 Tutorial 기능 ###
+> - 빈 클래스에 데이터로 활용할 변수들을 struct로 묶어 선언해주었습니다. 그리고, 에디터에서 데이터 테이블 에셋으로 사용하기 위해 #include "Engine/DataTable.h"를 추가해주었습니다.
 <pre>
   <code>
-void APlayerCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+#pragma once
 
-	PlayerInputComponent->BindAxis("MoveForward", this, &APlayerCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &APlayerCharacter::MoveRight);
-	PlayerInputComponent->BindAxis("TurnUp", this, &APlayerCharacter::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("TurnRight", this, &APlayerCharacter::AddControllerYawInput);
-}
-
-void APlayerCharacter::MoveForward(float Value)
+#include "CoreMinimal.h"
+#include "Engine/DataTable.h"
+======================= ItemStruct.h =======================
+UENUM()
+enum class EItemType : uint8
 {
-	FRotator NewRotation(0, Controller->GetControlRotation().Yaw, 0);
-	FVector NewDirection = FRotationMatrix(NewRotation).GetUnitAxis(EAxis::X);
-	AddMovementInput(NewDirection, Value);
-}
+	Armor UMETA(DisplayName = "Armor"),
+	Weapon UMETA(DisplayName = "Weapon"),
+	Coin UMETA(DisplayName = "Coin"),
+	Consumable UMETA(DisplayName = "Consumable")
+};
 
-void APlayerCharacter::MoveRight(float Value)
+USTRUCT()
+struct FItemTextData
 {
-	FRotator NewRotation(0, Controller->GetControlRotation().Yaw, 0);
-	FVector NewDirection = FRotationMatrix(NewRotation).GetUnitAxis(EAxis::Y);
-	AddMovementInput(NewDirection, Value);
-}
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere)
+	FString Name;
+
+	UPROPERTY(EditAnywhere)
+	FString Description;
+};
+
+USTRUCT()
+struct FItemAssetData
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere)
+	UTexture2D *Icon;
+
+	UPROPERTY(EditAnywhere)
+	UStaticMesh *Mesh;
+};
+
+USTRUCT(BlueprintType)
+struct FItemData : public FTableRowBase
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, Category = "ItemData")
+	int32 Amount;
+
+	UPROPERTY(EditAnywhere, Category = "ItemData")
+	FName ID;
+
+	UPROPERTY(EditAnywhere, Category = "ItemData")
+	EItemType ItemType;
+
+	UPROPERTY(EditAnywhere, Category = "ItemData")
+	FItemTextData TextData;
+
+	UPROPERTY(EditAnywhere, Category = "ItemData")
+	FItemAssetData AssetData;
+};
+======================= ItemStruct.h =======================
+	  
+======================= TutorialStruct.h =======================
+USTRUCT(BlueprintType)
+struct FTutorialData : public FTableRowBase
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere)
+	FString Title;
+
+	UPROPERTY(EditAnywhere)
+	FString Description;
+};
+======================= TutorialStruct.h =======================
   </code>
 </pre>
-> 이동을 위한 코드는 PlayerController의 Z축 회전값(Yaw의 회전값)을 가져와서 FRotationMatrix().GetUnitAxis함수를 사용하여 X와 Y축의 단위 벡터를 구한 후 AddMovementInput함수에 각 값을 넣어주어 축 입력값에 의해 각 축의 방향으로 위치를 업데이트 할 수 있게 해주었습니다.
-> 그리고, 이를 MoveForward와 MoveRight라는 함수로 묶어 UInputComponent의 BindAxis함수에 연결해주었습니다.
+> - 그리고, UObject타입의 클래스를 하나 더 생성하여 위 정보들을 각각 ItemBase와 TutorialBase라는 이름으로 복사해주었습니다. 
+> - 앞 서 만들었던 ItemStruct와 TutorialStruct 만으로도 테이블 에셋과 바인딩하여 사용할 수는 있었지만, Item의 경우 게임에서 내 임의의 변수의 값이 바뀌게 될 경우(예를 들어 아이템을 획득한 후 아이템을 사용해서 아이템의 수량이 줄었을 때) 테이블에 있는 값까지 변경되는 이슈가 생겨 복사본을 만들어 테이블에 입력한 값은 변경되지 않도록 해주었습니다.
 <pre>
   <code>
-void APlayerCharacter::StartRunning()
+======================= ItemStruct.h =======================
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Data/ItemStruct.h"
+#include "ItemBase.generated.h"
+
+
+class UInventoryComponent;
+
+UCLASS()
+class UE5_HORRORSGAME_API UItemBase : public UObject
 {
-	if (!bAimming)
+	GENERATED_BODY()
+	
+public:
+	// ===========================================================
+	// =                  Variable / Property		     =
+	// ===========================================================
+	UPROPERTY()
+	UInventoryComponent *OwningInventory;
+
+	UPROPERTY(VisibleAnywhere, Category = "ItemData")
+	int32 Amount;
+
+	UPROPERTY(VisibleAnywhere, Category = "ItemData")
+	FName ID;
+
+	UPROPERTY(VisibleAnywhere, Category = "ItemData")
+	EItemType ItemType;
+
+	UPROPERTY(VisibleAnywhere, Category = "ItemData")
+	FItemTextData TextData;
+
+	UPROPERTY(VisibleAnywhere, Category = "ItemData")
+	FItemAssetData AssetData;
+		
+	// ===========================================================
+	// =			 Functionary	   		     = 
+	// ===========================================================
+	UItemBase();
+
+	UItemBase *CreateItemCopy() const;
+
+	UFUNCTION(Category = "Item")
+	virtual void Use(class APlayerCharacter *Character);
+
+protected:
+	bool operator== (const FName &OtherID)
 	{
-		bRunning = true;
-		GetCharacterMovement()->MaxWalkSpeed = 500.f;
-		GetCharacterMovement()->bOrientRotationToMovement = true;
-		bUseControllerRotationYaw = false;
+		return this->ID == OtherID;
+	}
+};
+
+	  
+======================= TutorialStruct.h =======================
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Data/TutorialStruct.h"
+#include "TutorialBase.generated.h"
+
+UCLASS()
+class UE5_HORRORSGAME_API UTutorialBase : public UObject
+{
+	GENERATED_BODY()
+public:
+	// ===========================================================
+	// =                  Variable / Property		     =
+	// ===========================================================
+	FTutorialData TutorialData;
+
+
+
+	// ===========================================================
+	// =			Functionary	   		     = 
+	// ===========================================================
+	UTutorialBase();
+};
+  </code>
+</pre>
+> - 이 후, 캐릭터와 실제로 인터렉션 하게되는 액터인 PickupItem과 TutorialTrigger를 만들어 UDataTable에 있는 FindRow함수를 사용하여 데이터테이블의 행을 가져오고, NewObject함수를 사용해서 테이블의 데이터를 아이템에 바인딩해주었습니다.
+> - Item의 경우 실제 업무를 하게되었을 때, 기획자들이 레벨에 아이템을 배치할 경우 Item에 설정한 데이터에 맞게 외형이 즉시 변경되어 보일 수 있도록 PostEditChangeProperty함수를 사용하여 아이템의 Mesh를 연결해주었습니다. 
+<pre>
+  <code>
+======================= PickUpItem.cpp =======================
+	  
+#include "Object/Item/PickUpItem.h"
+#include "Object/Item/ItemBase.h"
+
+void APickUpItem::BeginPlay()
+{
+	Super::BeginPlay();
+
+	InitializePickUp(UItemBase::StaticClass());
+	HUD = Cast<AHorrorsHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
+	
+	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &APickUpItem::OnOverlapBegin);
+	CollisionSphere->OnComponentEndOverlap.AddDynamic(this, &APickUpItem::OnOverlapEnd);
+}
+
+void APickUpItem::InitializePickUp(const TSubclassOf<UItemBase> BaseClass)
+{
+	if (ItemDataTable && !DesiredItemID.IsNone())
+	{
+		const FItemData *ItemData = ItemDataTable->FindRow<FItemData>(DesiredItemID, DesiredItemID.ToString());
+
+		ItemReference = NewObject<UItemBase>(this, BaseClass);
+		
+		ItemReference->ID = ItemData->ID;
+		ItemReference->Amount = ItemData->Amount;
+		ItemReference->ItemType = ItemData->ItemType;
+		ItemReference->TextData = ItemData->TextData;
+		ItemReference->AssetData = ItemData->AssetData;
+
+		ItemMesh->SetStaticMesh(ItemData->AssetData.Mesh);
 	}
 }
 
-void APlayerCharacter::EndRunning()
+void APickUpItem::PostEditChangeProperty(FPropertyChangedEvent &PropertyChangedEvent)
 {
-	bRunning = false;
-	GetCharacterMovement()->MaxWalkSpeed = 200.f;
-	GetCharacterMovement()->bOrientRotationToMovement = false;
-	bUseControllerRotationYaw = true;
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	const FName ChangedPropertyName = PropertyChangedEvent.Property ? PropertyChangedEvent.Property->GetFName() : NAME_None;
+
+	if (ChangedPropertyName == GET_MEMBER_NAME_CHECKED(APickUpItem, DesiredItemID))
+	{
+		if (ItemDataTable)
+		{
+			const FString ContextString{ DesiredItemID.ToString() };
+
+			if (const FItemData *ItemData = ItemDataTable->FindRow<FItemData>(DesiredItemID, DesiredItemID.ToString()))
+			{
+				ItemMesh->SetStaticMesh(ItemData->AssetData.Mesh);
+			}
+		}
+	}
 }
+
+======================= PickUpItem.cpp =======================
+				
+#include "Object/TutorialTrigger.h"
+#include "Object/TutorialBase.h"
+				
+void ATutorialTrigger::BeginPlay()
+{
+	Super::BeginPlay();
+	CollisionBox->OnComponentBeginOverlap.AddDynamic(this, &ATutorialTrigger::OnOverlapBegin);
+	CollisionBox->OnComponentEndOverlap.AddDynamic(this, &ATutorialTrigger::OnOverlapEnd);
+
+	InitializeTutorial(UTutorialBase::StaticClass());
+}
+
+void ATutorialTrigger::InitializeTutorial(TSubclassOf<UTutorialBase> BaseClass)
+{
+	if (TutorialDataTable && !DesiredTutoName.IsNone())
+	{
+		const FTutorialData *TutoData = TutorialDataTable->FindRow<FTutorialData>(DesiredTutoName, DesiredTutoName.ToString());
+
+		TutorialReference = NewObject<UTutorialBase>(this, BaseClass);
+
+		TutorialReference->TutorialData.Title = TutoData->Title;
+		TutorialReference->TutorialData.Description = TutoData->Description;
+	}
+}
+				
   </code>
 </pre>
-> 달리기의 경우 bool 타입의 bRunning변수를 추가하여 GetCharacterMovement()->MaxWalkSpeed 값을 변경해주고, OOO변수의 값에 따라 bUseControllerRotationYaw 값과 GetCharacterMovement()->bOrientRotationToMovement의 값을 변경해주어 걷기와 달리기 상태에 따라 카메라 회전과 캐릭터의 회전이 달라질 수 있게 구현했습니다.
-
-> ### 조준 / 사격 ###
-
-<pre>
-  <code>
-// PlayerCharacter.cpp
-void APlayerCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-	
-		if(bAimming)
-		{
-			ZoomFactor += DeltaTime / 0.2f;
-		}
-		else
-		{
-			ZoomFactor -= DeltaTime / 0.2f;
-		}
-
-		ZoomFactor = FMath::Clamp<float>(ZoomFactor, 0.0f, 1.0f);
-		FollowCamera->FieldOfView = FMath::Lerp<float>(90.0f, 60.0f, ZoomFactor);
-		CameraBoom->TargetArmLength = FMath::Lerp<float>(200.0f, 100.0f, ZoomFactor);
-}
-
-void APlayerCharacter::StartAimming()
-{
-	bAimming = true;
-	GetCharacterMovement()->MaxWalkSpeed = 150.0f;
-}
-
-void APlayerCharacter::EndAimming()
-{
-	bAimming = false;
-	GetCharacterMovement()->MaxWalkSpeed = 200.0f;
-}
-  </code>
-</pre>
-> 조준 기능은 달리기와 마찬가지로 bAimming이라는 변수를 추가하여 캐릭터의 상태를 만들어주었으며, 애님 블루프린트에서 AimOffset을 적용시켜 카메라 회전에 따라 팔의 위치가 부드럽게 변경될 수 있게 구현했습니다.
+> ### Actor Component와 Interface를 활용한 Inventory 기능 ###
+> - ㅁㄴㅇㄹ
 
 <pre>
   <code>
