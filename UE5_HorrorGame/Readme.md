@@ -74,6 +74,7 @@ https://github.com/user-attachments/assets/f5c660a7-af4e-4ae2-80ee-15186c0162e6
 
 핵심 기능 설명
 -
+
 > ### DataTable을 활용한 Item과 Tutorial 기능 ###
 > - 빈 클래스에 데이터로 활용할 변수들을 struct로 묶어 선언해주었습니다. 그리고, 에디터에서 데이터 테이블 에셋으로 사용하기 위해 #include "Engine/DataTable.h"를 추가해주었습니다.
 <pre>
@@ -608,111 +609,140 @@ void AHorrorsHUD::BeginPlay()
 </pre>
 > 이 후, 각 UI들을 상황에 맞게 Visibility 상태를 변경해주는 것으로 구현했습니다.
 
-> ### NPC의 상태별 행동패턴과 보스 NPC의 거리별 공격 패턴턴 ###
-
+> ### NPC의 상태별 행동패턴과 보스 NPC의 거리별 공격 패턴 ###
+> - NPC와의 전투를 구현할 때, 상태별 행동 패턴과 거리별 행동패턴으로 나누어 구현해보았습니다.
+> - 우선, 상태별 패턴은 NPC의 AIController에서 만들었던 Perception System을 활용하여 NPC가 PlayerCharacter를 발견했을 때와 발견하지 못했을 때로 나누어 주었습니다.
 <pre>
   <Code>
-#include "Armor/Weapon_Pistol.h"
-#include "Character/Player/PlayerCharacter.h"
-#include "Character/Enemy/EnemyCharacter.h"
-#include "Character/Enemy/BossEnemyCharacter.h"
-#include "Camera/CameraComponent.h"
-#include "Kismet/GameplayStatics.h"
-
-AWeapon_Pistol::AWeapon_Pistol()
+======================= AHorrorsHUD.cpp =======================
+	  
+void AAI_Controller::SetupPerceptionSystem()
 {
-	MaxAmmoCount = 15.0f;
-	CurAmmoCount = MaxAmmoCount;
-	ReloadingDelayTime = 3.0f;
-	TraceDistance = 15000.0f;
-	AttackRate = 20.0f;
-}
-
-void AWeapon_Pistol::StartShoot(TWeakObjectPtr<APlayerCharacter> owner)
-{
-	auto Character = owner.Get();
-
-	if (Character)
+	SightConfig = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sight Config"));
+	if (SightConfig)
 	{
-		switch (FireType)
-		{
-			case EFireType::EF_LineTrace:
-			{
-				FireWithLineTrace(Character);
-				SpawnEffect();
-			}
-			break;
+		SetPerceptionComponent(*CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("Perception Component")));
 
-			case EFireType::EF_Projectile:
-				break;
-		}
+		SightConfig->SightRadius = 500.0f;
+		SightConfig->LoseSightRadius = SightConfig->SightRadius + 25.0f;
+		SightConfig->PeripheralVisionAngleDegrees = 90.0f;
+		SightConfig->SetMaxAge(5.0f);
+		SightConfig->AutoSuccessRangeFromLastSeenLocation = 520.f;
+
+		SightConfig->DetectionByAffiliation.bDetectEnemies = true;
+		SightConfig->DetectionByAffiliation.bDetectFriendlies = true;
+		SightConfig->DetectionByAffiliation.bDetectNeutrals = true;
+
+		GetPerceptionComponent()->SetDominantSense(*SightConfig->GetSenseImplementation());
+		GetPerceptionComponent()->OnTargetPerceptionUpdated.AddDynamic(this, &AAI_Controller::OnTargetDetected);
+		GetPerceptionComponent()->ConfigureSense(*SightConfig);
 	}
 }
 
-void AWeapon_Pistol::Reload()
+void AAI_Controller::OnTargetDetected(AActor *Actor, FAIStimulus const Stimulus)
 {
-	ResetAmmoCount();
-}
-
-void AWeapon_Pistol::FireWithLineTrace(TWeakObjectPtr<APlayerCharacter> owner)
-{
-	auto Character = owner.Get();
-
-	if (Character)
+	if (auto *const ch = Cast<APlayerCharacter>(Actor))
 	{
-		AController *ownerController = Character->GetController();
-
-		if (ownerController)
-		{
-			FVector StartTrace = WeaponMesh->GetSocketLocation("FirePoint");
-			FVector EndTrace = StartTrace + Character->FollowCamera->GetForwardVector() * TraceDistance;
-
-			FCollisionQueryParams CollisionParam;
-			CollisionParam.AddIgnoredActor(this);
-
-			FHitResult HitTrace;
-
-			if (GetWorld()->LineTraceSingleByChannel(HitTrace, StartTrace, EndTrace, ECC_GameTraceChannel3, CollisionParam))
-			{
-				FRotator Rotation;
-				FVector ShotDirection = -Rotation.Vector();
-
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Impact, HitTrace.Location, ShotDirection.Rotation());
-
-				if (HitTrace.bBlockingHit)
-				{
-					if (auto *NPC = Cast<AEnemyCharacter>(HitTrace.GetActor()))
-					{
-						UGameplayStatics::ApplyDamage(NPC, 20.0f, NULL, this, UDamageType::StaticClass());
-					}
-					if (auto Boss = Cast<ABossEnemyCharacter>(HitTrace.GetActor()))
-					{
-						UGameplayStatics::ApplyDamage(Boss, 20.0f, NULL, this, UDamageType::StaticClass());
-					}
-				}
-			}
-			
-			DecreaseAmmoCount();
-
-			if (CurAmmoCount == 0)
-			{
-				Character->StartReload();
-			}
-		}
+		GetBlackboardComponent()->SetValueAsBool("CanSeePlayer", Stimulus.WasSuccessfullySensed());
 	}
-}
-
-void AWeapon_Pistol::SpawnEffect()
-{
-	UGameplayStatics::SpawnEmitterAttached(MuzzleFlash, WeaponMesh, TEXT("FirePoint"));
-	UGameplayStatics::SpawnSoundAttached(MuzzleSound, WeaponMesh, TEXT("FirePoint"));
 }
   </Code>
 </pre>
+> - UNavigationSystemV1에 있는 GetCurrent함수를 사용하여 현재 위치를 저장해주었고, GetRandomPointInNavigableRadius 함수를 사용하여 특정한 범위내에서 랜덤하게 위치를 찾도록 구현해주었습니다.
+> - 이 후, NPC가 PlayerCharacter를 발견하지 못했다면 FindRandomLocation -> MoveTo -> Wait 순으로 반복될 수 있도록 Sequence노드로 연결하여 구현하였습니다.
+<pre>
+  <code>
+======================= BTTask_FindRandomLocation.cpp =======================
+EBTNodeResult::Type UBTTask_FindRandomLocation::ExecuteTask(UBehaviorTreeComponent &OwnerComp, uint8 *NodeMemory)
+{
+	if (AAI_Controller *const Controll = Cast<AAI_Controller>(OwnerComp.GetAIOwner()))
+	{
+		if (auto *const NPC = Controll->GetPawn())
+		{
+			FVector const Origin = NPC->GetActorLocation();
+			if (auto* const NavSys = UNavigationSystemV1::GetCurrent(GetWorld()))
+			{
+				FNavLocation Loc;
+				if (NavSys->GetRandomPointInNavigableRadius(Origin, SearchRadius, Loc))
+				{
+					OwnerComp.GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), Loc.Location);
+				}
 
-> - 각 무기마다 공통적으로 사용해야하는 기능은 부모 클래스인 AWeaponBase에 구현하여 자식클래스들이 모두 사용할 수 있게 하였고, 실제 총알이 발사되는 함수는 GetWorld()->LineTraceSingleByChannel()함수를 사용하여 구현하였습니다.
-> - NPC와의 인터렉션은 HitResult.bBlockingHit 변수를 사용하여 정해진 ACharacter타입과의 충돌을 체크하고 충돌했다면 UGameplayStatic::ApllyDamage함수를 사용하여 임의의 값을 전달해주는 방식으로 구현했습니다.
+				FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+				return EBTNodeResult::Succeeded;
+			}
+		}
+	}
+	return EBTNodeResult::Failed;
+}
+  </code>
+</pre>
 
+### 블루 프린트 이미지 만들어서 다시 넣어야함 ㅠㅠ ###
+
+> - NPC가 PlayerCharacter를 발견했다면 기존 랜덤하게 방향으로 찾아 이동하는 상태에서 벗어나 PlayerCharacter의 위치로 이동 할 수 있도록, FindPlayerLocation노드를 만들어 주었습니다.
+> - 이 역시, Sequence노드로 연결하여 FindPlayerLocation -> MoveTo -> Wait의 행동을 반복하게끔 구현하였습니다.
+> - 또한, MoveTo로 이동을 설정 할 경우 PlayerCharacter의 위치를 최초 한번만 탐색하여 해당 위치로 이동하는 현상이 있었습니다. 개인적으로는 NPC가 PlayerCharacter를 발견하고 해당 위치로 이동하는 동안 PlayerCharacter가 움직이면 바뀐 위치로 따라서 이동하게 구현하고 싶었기에 ChasingPlayer노드를 별도로 만들어 UAIBlueprintHelperLibrary에 있는 SimpleMoveToLocation노드를 사용하여 계속해서 Player의 위치를 업데이트하여 이동할 수 있도록 하였고, 비헤이비어트리 역시 FindPlayerLocation -> MoveTo -> Wait으로 변경해주었습니다.
+
+<pre>
+  <code>
+======================= BTTask_FindPlayerLocation.cpp =======================
+EBTNodeResult::Type UBTTask_FindPlayerLocation::ExecuteTask(UBehaviorTreeComponent &OwnerComp, uint8 *NodeMemory)
+{
+	if (auto *const Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))
+	{
+		auto const PlayerLocation = Player->GetActorLocation();
+		if (SearchRandom)
+		{
+			FNavLocation Loc;
+
+			if (auto *const NavSys = UNavigationSystemV1::GetCurrent(GetWorld()))
+			{
+				if (NavSys->GetRandomPointInNavigableRadius(PlayerLocation, SearchRadius, Loc))
+				{
+					OwnerComp.GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), Loc.Location);
+					FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+					return EBTNodeResult::Succeeded;
+				}
+			}
+		}
+		else
+		{
+			OwnerComp.GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), PlayerLocation);
+			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+			return EBTNodeResult::Succeeded;
+		}
+	}
+	return EBTNodeResult::Failed;
+}
+
+======================= BTTask_ChasingPlayer.cpp =======================	
+	  
+EBTNodeResult::Type UBTTask_ChasingPlayer::ExecuteTask(UBehaviorTreeComponent &OwnerComp, uint8 *NodeMemory)
+{
+	if(auto *const Controller = Cast<AAI_Controller>(OwnerComp.GetAIOwner()))
+	{
+		auto const PlayerLocation = OwnerComp.GetBlackboardComponent()->GetValueAsVector(GetSelectedBlackboardKey());
+		
+		UAIBlueprintHelperLibrary::SimpleMoveToLocation(Controller, PlayerLocation);
+
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+		return EBTNodeResult::Succeeded;
+	}
+	return EBTNodeResult::Failed;
+}
+
+  </code>
+</pre>
+
+### 여기도 블루프린트 이미지 ㅠㅠ ###
+
+> - 보스 NPC의 경우 자기 자신과 PlayerCharacter 간의 거리에 따라 다른 행동을 할 수 있도록 구현하고 쿨타임 시스템 또한 구현해보았습니다.
+<pre>
+  <Code>
+	  
+  </Code>
+</pre>
 
 시행 착오
 -
