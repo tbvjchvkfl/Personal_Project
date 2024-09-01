@@ -326,70 +326,289 @@ void ATutorialTrigger::InitializeTutorial(TSubclassOf<UTutorialBase> BaseClass)
   </code>
 </pre>
 > ### Actor Component와 Interface를 활용한 Inventory 기능 ###
-> - Inventory기능을 구현할 때, Unreal Interface와 Actor Component를 사용해서 코드와 기능의 확장성을 고려해보았습니다.
-
+> - Inventory기능을 구현할 때, Unreal Interface와 Actor Component를 사용해서 클래스간의 유연성과 기능의 확장성을 고려하여 구현하였습니다.
+> - InteractionInterface에 Interaction함수를 순수가상함수로 만들어 해당 클래스를 상속받는 클래스에서 override하여 사용하였습니다.
+> - 이후, PlayerCharacter에서 LineTrace기능을 사용하여 PickUpItem의 미리 생성해둔 CollisionSphere에 Hit했을 경우 HitResult에 GetActor함수를 InteractionInterface로 형변환하여 Interaction함수를 호출해주었습니다.
 <pre>
   <code>
-void APlayerCharacter::StartShoot()
+
+======================= InteractionInterface.h =======================
+#pragma once
+
+#include "CoreMinimal.h"
+#include "UObject/Interface.h"
+#include "InteractionInterface.generated.h"
+
+UINTERFACE(MinimalAPI)
+class UInteractionInterface : public UInterface
 {
-	if (bAimming && !bReloading)
+	GENERATED_BODY()
+};
+
+class UE5_HORRORSGAME_API IInteractionInterface
+{
+	GENERATED_BODY()
+
+public:
+	EInteractionType InteractionType;
+
+	virtual void Interaction(class APlayerCharacter *Player) = 0;
+};
+
+======================= PlayerCharacter.cpp =======================
+
+void APlayerCharacter::Interaction()
+{
+	FVector TraceStart{ GetPawnViewLocation() + FVector(5.0f, 8.0f, 10.0f)};
+	FVector TraceEnd{ TraceStart + (GetViewRotation().Vector() * InteractionCheckDistance) };
+	
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+	
+	FHitResult TraceHit;
+
+	if (GetWorld()->LineTraceSingleByChannel(TraceHit, TraceStart, TraceEnd, ECollisionChannel::ECC_GameTraceChannel2, QueryParams))
 	{
-		if (CurrentWeapon)
+		if (TraceHit.bBlockingHit)
 		{
-			if (CurrentWeapon == WeaponInventory[0])
+			if (auto item = Cast<APickUpItem>(TraceHit.GetActor()))
 			{
-				PlayAnimMontage(ShootPistolAnim);
+				InteractableInterface = TraceHit.GetActor();
+				InteractableInterface->Interaction(this);
 			}
-			if (CurrentWeapon == WeaponInventory[1])
+			if (auto Devie = Cast<AInteractionDoor>(TraceHit.GetActor()))
 			{
-				PlayAnimMontage(ShootShotGunAnim);
+				InteractableInterface = TraceHit.GetActor();
+				InteractableInterface->Interaction(this);
 			}
-			CurrentWeapon->StartShoot(this);
+			if (auto Device = Cast<AInteractionDoorSingle>(TraceHit.GetActor()))
+			{
+				InteractableInterface = TraceHit.GetActor();
+				InteractableInterface->Interaction(this);
+			}
 		}
-		else
+	}
+}
+
+======================= PickUpItem.cpp =======================
+				
+void APickUpItem::Interaction(class APlayerCharacter *Player)
+{
+	if (Player)
+	{
+		TakePickUp(Player);
+	}
+}
+
+void APickUpItem::TakePickUp(APlayerCharacter *Taker)
+{
+	if (!IsPendingKillPending())
+	{
+		if (ItemReference)
 		{
-			return;
+			if (UInventoryComponent *PlayerInventory = Taker->GetInventory())
+			{
+				PlayerInventory->AddItem(ItemReference);
+				Destroy();
+			}
 		}
 	}
 }
   </code>
 </pre>
 
-> 사격 기능의 경우 AWeaponBase* CurrentWeapon 변수에 TArray<WeaponBase*> WeaponInventory에 담겨져있는 값들 중 CurrentWeapon이 가리키는 값에 있는 StartShoot함수를 실행시켜주고 해당 값의 사격 애님몽타주를 실행시켜주었습니다.
-> 실제 사격 인터렉션은 무기로 사용할 AWeaponBase라는 액터 클래스를 만들고 이를 상속받아 AWeapon_Pistol과 AWeapon_ShotGun 클래스를 만들어 상속 구조로 구현했습니다.
+> - 그리고, ActorComponent클래스를 만들어 Inventory 기능을 구현하고 PlayerCharacter에 컴포넌트를 추가하였습니다.
+<pre>
+ <code>
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Components/ActorComponent.h"
+#include "InventoryComponent.generated.h"
+
+class UItemBase;
+class AHorrorsHUD;
+
+DECLARE_MULTICAST_DELEGATE(FOnInventoryUpdate);
+
+UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+class UE5_HORRORSGAME_API UInventoryComponent : public UActorComponent
+{
+	GENERATED_BODY()
+public:
+	// ===========================================================
+	// =                  Variable / Property   		     =
+	// ===========================================================
+	
+	// 델리게이트 인벤토리 내용 업데이트용
+	FOnInventoryUpdate OnInventoryUpdated;
+
+	// ===========================================================
+	// =		        Functionary			     = 
+	// ===========================================================
+	UInventoryComponent();
+
+	UFUNCTION(Category = "Inventory")
+	FORCEINLINE TArray<UItemBase *> GetItemInventory()const { return ItemInventory; };
+
+	UFUNCTION(Category = "Inventory")
+	FORCEINLINE int32 GetCoinInventory() const { return CoinInventory; }
+
+	UFUNCTION(Category = "Inventory")
+	void AddItem(UItemBase *Item);
+
+protected:
+	// ===========================================================
+	// =                  Variable / Property		     =
+	// ===========================================================
+
+	UPROPERTY(EditInstanceOnly, Category = "Inventory")
+	int32 InventorySlotCapacity;
+
+	UPROPERTY(VisibleAnywhere, Category = "Inventory")
+	int32 CoinInventory;
+
+	UPROPERTY(VisibleAnywhere, Category = "Inventory")
+	TArray<TObjectPtr<UItemBase>> ItemInventory;
+
+	AHorrorsHUD *UIComp;
+
+	// ===========================================================
+	// =			Functionary			     = 
+	// ===========================================================
+	virtual void BeginPlay() override;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction) override;
+};
+ </code>
+</pre>
+
+> ### HUD를 활용한 전체 UI 관리 ###
+> - 게임 내 모든 UI를 HUD에서 처음으로 생성하고 관리될 수 있도록 구현했습니다.
+> - HUD의 BeginPlay함수에서 게임 내 모든 UI들을 생성하고 세팅해주었습니다.
 <pre>
   <code>
-
-#include "Armor/WeaponBase.h"
-#include "Components/SkeletalMeshComponent.h"
-
-AWeaponBase::AWeaponBase()
+======================= AHorrorsHUD.h =======================
+UCLASS()
+class UE5_HORRORSGAME_API AHorrorsHUD : public AHUD
 {
-	PrimaryActorTick.bCanEverTick = true;
-	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>("WeaponMesh");
-	WeaponMesh->SetupAttachment(RootComponent);
-}
+	GENERATED_BODY()
+public:
+	// ===========================================================
+	// =                  Variable / Property		     =
+	// ===========================================================
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
+	TSubclassOf<UInGameHUD> InGameHUD;
 
-void AWeaponBase::DecreaseAmmoCount()
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
+	TSubclassOf<UInventory> Inventory;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
+	TSubclassOf<UGameResult> Result;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
+	TSubclassOf<UTutorialWidget> TutorialUI;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
+	TSubclassOf<UBossHealthBar> BossHealthUI;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
+	TSubclassOf<UGameQuestUI> QuestUI;
+
+	bool bIsMenuVisible;
+	bool bIsShowingResult;
+	// ===========================================================
+	// =			  Functionary	   		     = 
+	// ===========================================================
+	AHorrorsHUD();
+
+	void DisplayMenu();
+	void HideMenu();
+
+	void ToggleMenu();
+
+	void ShowResult(FString Text);
+
+	void HideResult();
+
+	UFUNCTION(BlueprintCallable)
+	UInGameHUD* GetInGameHUDWidget() { return InGameHUDWidget; }
+
+protected:
+	// ===========================================================
+	// =                  Variable / Property		     =
+	// ===========================================================
+	UPROPERTY()
+	UInGameHUD *InGameHUDWidget;
+
+	UPROPERTY()
+	UInventory *InventoryWidget;
+
+	UPROPERTY()
+	UGameResult *GameResultWidget;
+
+	UPROPERTY()
+	UTutorialWidget *TutorialWidget;
+
+	UPROPERTY()
+	UBossHealthBar *BossHealth;
+
+	UPROPERTY()
+	UGameQuestUI *QuestUIWidget;
+	// ===========================================================
+	// =			 Functionary	   		     = 
+	// ===========================================================
+	virtual void BeginPlay()override;
+
+};
+
+======================= AHorrorsHUD.cpp =======================
+void AHorrorsHUD::BeginPlay()
 {
-	--CurAmmoCount;
-	if (ShowUIDelegate.IsBound())
+	Super::BeginPlay();
+	if (InGameHUD)
 	{
-		ShowUIDelegate.Broadcast();
+		InGameHUDWidget = CreateWidget<UInGameHUD>(GetWorld(), InGameHUD);
+		InGameHUDWidget->AddToViewport();
+		InGameHUDWidget->SetVisibility(ESlateVisibility::Visible);
+	}
+	if (Inventory)
+	{
+		InventoryWidget = CreateWidget<UInventory>(GetWorld(), Inventory);
+		InventoryWidget->AddToViewport();
+		InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
+	}
+
+	if (Result)
+	{
+		GameResultWidget = CreateWidget<UGameResult>(GetWorld(), Result);
+		GameResultWidget->SetVisibility(ESlateVisibility::Collapsed);
+	}
+
+	if (TutorialUI)
+	{
+		TutorialWidget = CreateWidget<UTutorialWidget>(GetWorld(), TutorialUI);
+		TutorialWidget->AddToViewport();
+		TutorialWidget->SetVisibility(ESlateVisibility::Collapsed);
+	}
+
+	if (BossHealthUI)
+	{
+		BossHealth = CreateWidget<UBossHealthBar>(GetWorld(), BossHealthUI);
+		BossHealth->AddToViewport();
+		BossHealth->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	if (QuestUI)
+	{
+		QuestUIWidget = CreateWidget<UGameQuestUI>(GetWorld(), QuestUI);
+		QuestUIWidget->AddToViewport();
+		QuestUIWidget->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }
-
-void AWeaponBase::ResetAmmoCount()
-{
-	CurAmmoCount = MaxAmmoCount;
-	if (ShowUIDelegate.IsBound())
-	{
-		ShowUIDelegate.Broadcast();
-	}
-}
-
   </code>
 </pre>
+> 이 후, 각 UI들을 상황에 맞게 Visibility 상태를 변경해주는 것으로 구현했습니다.
+
+> ### NPC의 상태별 행동패턴과 보스 NPC의 거리별 공격 패턴턴 ###
 
 <pre>
   <Code>
