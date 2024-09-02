@@ -678,7 +678,7 @@ EBTNodeResult::Type UBTTask_FindRandomLocation::ExecuteTask(UBehaviorTreeCompone
   </code>
 </pre>
 
-### 블루 프린트 이미지 만들어서 다시 넣어야함 ㅠㅠ ###
+![스크린샷 2024-09-02 145103](https://github.com/user-attachments/assets/ba149f08-e1a6-4140-b36b-4a1bb17d5271)
 
 > - NPC가 PlayerCharacter를 발견했다면 기존 랜덤하게 방향으로 찾아 이동하는 상태에서 벗어나 PlayerCharacter의 위치로 이동 할 수 있도록, FindPlayerLocation노드를 만들어 주었습니다.
 > - 이 역시, Sequence노드로 연결하여 FindPlayerLocation -> MoveTo -> Wait의 행동을 반복하게끔 구현하였습니다.
@@ -735,14 +735,139 @@ EBTNodeResult::Type UBTTask_ChasingPlayer::ExecuteTask(UBehaviorTreeComponent &O
   </code>
 </pre>
 
-### 여기도 블루프린트 이미지 ㅠㅠ ###
+![image](https://github.com/user-attachments/assets/2f44f7ed-df15-4ab5-b13d-4a3a7cc1f21f)
+> - 이 후, BT_Service노드를 사용하여 Player가 NPC의 특정 범위 안에 있을 경우 근접 공격을 실행할 수 있도록 구현해주었습니다.
 
-> - 보스 NPC의 경우 자기 자신과 PlayerCharacter 간의 거리에 따라 다른 행동을 할 수 있도록 구현하고 쿨타임 시스템 또한 구현해보았습니다.
 <pre>
   <Code>
+======================= BTTask_MeleeAttack.cpp =======================	
 	  
+EBTNodeResult::Type UBTTask_MeleeAttack::ExecuteTask(UBehaviorTreeComponent &OwnerComp, uint8 *NodeMemory)
+{
+    auto const OutOfRange = !OwnerComp.GetBlackboardComponent()->GetValueAsBool(GetSelectedBlackboardKey());
+    if (OutOfRange)
+    {
+        FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
+        return EBTNodeResult::Failed;
+    }
+
+    auto const *const Controller = OwnerComp.GetAIOwner();
+    if (auto *const NPC = Cast<AEnemyCharacter>(Controller->GetPawn()))
+    {
+        if (auto *const iCombat = Cast<IEnemyCombatInterface>(NPC))
+        {
+            if (MontageHasFinished(NPC))
+            {
+                iCombat->Execute_MeleeAttack(NPC);
+            }
+        }
+    }
+    if (auto *const Boss = Cast<ABossEnemyCharacter>(Controller->GetPawn()))
+    {
+        if (BossMontageHasFinished(Boss))
+        {
+            Boss->PlayAttackAnim();
+        }
+    }
+    FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+    return EBTNodeResult::Succeeded;
+}
+	    
+bool UBTTask_MeleeAttack::MontageHasFinished(AEnemyCharacter *const NPC)
+{
+    return NPC->GetMesh()->GetAnimInstance()->Montage_GetIsStopped(NPC->GetAttackMontage());
+}
+
+bool UBTTask_MeleeAttack::BossMontageHasFinished(ABossEnemyCharacter *const Boss)
+{
+    return Boss->GetMesh()->GetAnimInstance()->Montage_GetIsStopped(Boss->GetAttackAnimation());
+}
+
+	    
+======================= BTService_IsPlayerInMeleeRange.cpp =======================	
+void UBTService_IsPlayerInMeleeRange::OnBecomeRelevant(UBehaviorTreeComponent &OwnerComp, uint8 *NodeMemory)
+{
+	auto const *const Controller = Cast<AAI_Controller>(OwnerComp.GetAIOwner());
+	auto const *const NPC = Cast<AEnemyCharacter>(Controller->GetPawn());
+
+	auto const *const Player = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+
+	OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), NPC->GetDistanceTo(Player) <= MeleeRange);
+}
   </Code>
 </pre>
+
+![image](https://github.com/user-attachments/assets/a0fe3856-4d87-458e-b2dd-9653e209d725)
+
+> - 보스 NPC의 경우 자기 자신과 PlayerCharacter 간의 거리에 따라 다른 행동을 할 수 있도록 구현하고 쿨타임 시스템 또한 구현해보았습니다.
+> - CollTime 기능은 SetTimer함수를 사용하여 구현하였으며, Lambda를 사용했습니다.
+<Pre>
+  <code>
+======================= BTTask_Skill.cpp =======================	
+EBTNodeResult::Type UBTTask_Skill::ExecuteTask(UBehaviorTreeComponent &OwnerComp, uint8 *NodeMemory)
+{
+    auto *const Controller = Cast<ABossEnemyController>(OwnerComp.GetAIOwner());
+
+    auto *const Boss = Cast<ABossEnemyCharacter>(Controller->GetPawn());
+
+    auto *const BossEnemyAnimInstance = Cast<UBossEnemyAnimInstance>(Boss->GetMesh()->GetAnimInstance());
+
+    auto *const Target = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+
+    if (!CheckSkill(OwnerComp, Boss, Target, BossEnemyAnimInstance))
+    {
+        FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
+        return EBTNodeResult::Failed;
+    }
+    else
+    {
+        AttackSkill(Controller, BossEnemyAnimInstance);
+        FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+        return EBTNodeResult::Succeeded;
+    }
+}
+
+void UBTTask_Skill::AttackSkill(ABossEnemyController* const BossController, UBossEnemyAnimInstance* const BossAnim)
+{
+    BossController->StopMovement();
+    BossAnim->DoSkill(SkillDelay);
+}
+
+bool UBTTask_Skill::CheckSkill(UBehaviorTreeComponent &TreeComp, ABossEnemyCharacter *const Boss, APlayerCharacter *Player, UBossEnemyAnimInstance *const BossAnimInstance)
+{
+    if (Boss->GetDistanceTo(Player) >= SkillRange && !BossAnimInstance->GetCoolTime())
+    {
+        TreeComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), true);
+        return true;
+    }
+    else
+    {
+        TreeComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), false);
+        return false;
+    }
+    
+}
+	    
+======================= BossEnemyAnimInstance.cpp =======================	
+void UBossEnemyAnimInstance::AttackCoolDown(float CoolTime)
+{
+	if (!bIsCoolTime)
+	{
+		bIsCoolTime = true;
+		GetWorld()->GetTimerManager().SetTimer
+		(TimerHandle,
+		[this]()
+			{
+				bIsCoolTime = false;
+				GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
+			},
+		CoolTime,
+		false
+		);
+	}
+}
+  </code>
+</Pre>
 
 시행 착오
 -
