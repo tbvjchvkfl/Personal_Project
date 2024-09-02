@@ -75,6 +75,10 @@ https://github.com/user-attachments/assets/f5c660a7-af4e-4ae2-80ee-15186c0162e6
 핵심 기능 설명
 -
 
+<details>
+	<summary style = "font-size: 24px;">DataTable을 활용한 Item과 Tutorial 기능 (Click!)</summary>
+<p>
+	
 > ### DataTable을 활용한 Item과 Tutorial 기능 ###
 > - 빈 클래스에 데이터로 활용할 변수들을 struct로 묶어 선언해주었습니다. 그리고, 에디터에서 데이터 테이블 에셋으로 사용하기 위해 #include "Engine/DataTable.h"를 추가해주었습니다.
 <pre>
@@ -326,7 +330,16 @@ void ATutorialTrigger::InitializeTutorial(TSubclassOf<UTutorialBase> BaseClass)
 				
   </code>
 </pre>
-> ### Actor Component와 Interface를 활용한 Inventory 기능 ###
+
+</p>
+</details>
+
+
+<details>
+	<summary>Actor Component와 Interface를 활용한 Inventory 기능 (Click!)</summary>
+	<p>
+
+  > ### Actor Component와 Interface를 활용한 Inventory 기능 ###
 > - Inventory기능을 구현할 때, Unreal Interface와 Actor Component를 사용해서 클래스간의 유연성과 기능의 확장성을 고려하여 구현하였습니다.
 > - InteractionInterface에 Interaction함수를 순수가상함수로 만들어 해당 클래스를 상속받는 클래스에서 override하여 사용하였습니다.
 > - 이후, PlayerCharacter에서 LineTrace기능을 사용하여 PickUpItem의 미리 생성해둔 CollisionSphere에 Hit했을 경우 HitResult에 GetActor함수를 InteractionInterface로 형변환하여 Interaction함수를 호출해주었습니다.
@@ -483,6 +496,13 @@ protected:
  </code>
 </pre>
 
+	</p>
+</details>
+
+<details>
+	<summary>HUD를 활용한 전체 UI 관리 (Click!)</summary>
+	<p>
+		
 > ### HUD를 활용한 전체 UI 관리 ###
 > - 게임 내 모든 UI를 HUD에서 처음으로 생성하고 관리될 수 있도록 구현했습니다.
 > - HUD의 BeginPlay함수에서 게임 내 모든 UI들을 생성하고 세팅해주었습니다.
@@ -609,6 +629,13 @@ void AHorrorsHUD::BeginPlay()
 </pre>
 > 이 후, 각 UI들을 상황에 맞게 Visibility 상태를 변경해주는 것으로 구현했습니다.
 
+	</p>
+</details>
+
+<details>
+	<summary>NPC의 상태별 행동패턴과 보스 NPC의 거리별 공격 패턴 (Click!)</summary>
+	<p>
+		
 > ### NPC의 상태별 행동패턴과 보스 NPC의 거리별 공격 패턴 ###
 > - NPC와의 전투를 구현할 때, 상태별 행동 패턴과 거리별 행동패턴으로 나누어 구현해보았습니다.
 > - 우선, 상태별 패턴은 NPC의 AIController에서 만들었던 Perception System을 활용하여 NPC가 PlayerCharacter를 발견했을 때와 발견하지 못했을 때로 나누어 주었습니다.
@@ -868,6 +895,10 @@ void UBossEnemyAnimInstance::AttackCoolDown(float CoolTime)
 }
   </code>
 </Pre>
+
+	</p>
+</details>
+
 
 시행 착오
 -
