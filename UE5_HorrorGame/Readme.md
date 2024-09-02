@@ -76,7 +76,7 @@ https://github.com/user-attachments/assets/f5c660a7-af4e-4ae2-80ee-15186c0162e6
 -
 
 <details>
-	<summary style = "font-size: 24px;">DataTable을 활용한 Item과 Tutorial 기능 (Click!)</summary>
+	<summary>DataTable을 활용한 Item과 Tutorial 기능 (Click!)</summary>
 <p>
 	
 > ### DataTable을 활용한 Item과 Tutorial 기능 ###
